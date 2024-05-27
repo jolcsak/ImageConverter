@@ -1,0 +1,6 @@
+@ImageConverter.Web.Server_HostAddress = http://localhost:5024
+
+GET {{ImageConverter.Web.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

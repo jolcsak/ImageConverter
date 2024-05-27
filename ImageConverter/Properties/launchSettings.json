@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ImageConverter": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
