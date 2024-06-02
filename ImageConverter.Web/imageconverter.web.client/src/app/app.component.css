@@ -1,4 +1,4 @@
-﻿:host {
+:host {
     max-width: 1280px;
     padding: 2rem;
     text-align: center;
@@ -19,4 +19,62 @@ th, td {
 
 table {
     margin: 0 auto;
+}
+
+.start-button {
+  background-color: #4CAF50; /* Green background */
+  border: none;
+  color: white; /* White text */
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 12px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+.start-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}
+
+.start-button .fa-start {
+  margin-right: 8px; /* Space between icon and text */
+}
+
+.start-button:disabled {
+  background-color: #e0e0e0; /* Gray background for disabled state */
+  color: #9e9e9e; /* Gray text for disabled state */
+  cursor: not-allowed; /* Not-allowed cursor */
+}
+
+.stop-button {
+  background-color: #f44336; /* Red background */
+  border: none;
+  color: white; /* White text */
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 12px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+.stop-button:hover {
+  background-color: #d32f2f; /* Darker red on hover */
+}
+
+.stop-button .fa-stop {
+  margin-right: 8px; /* Space between icon and text */
+}
+
+.stop-button:disabled {
+  background-color: #e0e0e0; /* Gray background for disabled state */
+  color: #9e9e9e; /* Gray text for disabled state */
+  cursor: not-allowed; /* Not-allowed cursor */
 }

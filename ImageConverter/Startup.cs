@@ -26,6 +26,8 @@ namespace ImageConverter
 
             app.Services.AddSingleton<ISumStorageHandler, SumStorageHandler>();
 
+            app.Services.AddSingleton<ImageConverterContext>();
+
             // configuration
 
             app.Services.Configure<ImageConverterConfiguration>(app.Configuration);

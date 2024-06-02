@@ -1,24 +1,51 @@
-﻿<h1 id="tableLabel">Weather forecast</h1>
+<h1 id="tableLabel">Image Converter client</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
+<p style="text-align:left">Server Time: {{ sum.currentDate | date:'yyyy-MM-dd HH:mm:ss' }}</p>
 
-<p *ngIf="!forecasts"><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationangular">https://aka.ms/jspsintegrationangular</a> for more details.</em></p>
+<p *ngIf="!sum"><em>Loading... </em></p>
 
-<table *ngIf="forecasts">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Temp. (C)</th>
-            <th>Temp. (F)</th>
-            <th>Summary</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let forecast of forecasts">
-            <td>{{ forecast.date }}</td>
-            <td>{{ forecast.temperatureC }}</td>
-            <td>{{ forecast.temperatureF }}</td>
-            <td>{{ forecast.summary }}</td>
-        </tr>
-    </tbody>
+<button class="start-button" [disabled]="isImageConverterJobRunning" (click)="start()">
+  <i class="fa fa-start"></i> Start
+</button>
+
+<button class="stop-button" [disabled]="!isImageConverterJobRunning" (click)="stop()" >
+  <i class="fa fa-stop"></i> Stop
+</button>
+
+<table *ngIf="sum">
+  <tr>
+    <td>State</td>
+    <td>Last Started</td>
+    <td>Last Finished</td>
+    <td>Next Start</td>
+  </tr>
+  <tr>
+    <td>{{ sum.state }}</td>
+    <td>{{ sum.lastStartDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+    <td>{{ sum.lastFinishDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+    <td *ngIf="isNextFirePresent">{{ sum.nextFireDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+    <td *ngIf="!isNextFirePresent">not set</td>
+  </tr>
 </table>
+
+<table *ngIf="sum">
+  <tr>
+    <td>Processed bytes</td>
+    <td>Saved bytes</td>
+    <td>Converted image count</td>
+    <td>Deleted file count</td>
+  </tr>
+  <tr>
+    <td>{{ sum.processedBytes | filesize }}</td>
+    <td>{{ sum.sumSavedBytes | filesize }}</td>
+    <td>{{ sum.convertedImageCount }}</td>
+    <td>{{ sum. deletedFileCount }}</td>
+  </tr>
+</table>
+
+<div class="log-entries">
+  <div *ngFor="let log of logMessages" class="log-entry">
+    <p style="text-align:left">{{ log.timeStamp }} - {{ log.type }} - {{ log.message }}</p>
+    <hr>
+  </div>
+</div>

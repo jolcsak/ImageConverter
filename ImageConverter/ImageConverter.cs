@@ -11,28 +11,28 @@ namespace ImageConverter
     {
         private static object sizeLock = new object();
 
-        public long SumInputSize { get; private set; } = 0;
-        public long SumOutputSize { get; private set; } = 0;
-
         private readonly Dictionary<MagickFormat, IConversionInRule> conversionInRules;
         private readonly Dictionary<MagickFormat, IConversionOutRule> conversionOutRules;
 
         private readonly Dictionary<string, IImageTransformer> transformers;
         private readonly ImageConverterConfiguration configuration;
         private readonly ILogger<ImageConverter> logger;
+        private readonly ImageConverterContext imageConverterContext;
 
         public ImageConverter(
             IEnumerable<IConversionInRule> conversionInRules, 
             IEnumerable<IConversionOutRule> conversionOutRules,
             IEnumerable<IImageTransformer> transformers,
             IOptions<ImageConverterConfiguration> configurationSettings,
-            ILogger<ImageConverter> logger)
+            ILogger<ImageConverter> logger,
+            ImageConverterContext imageConverterContext)
         {
             this.conversionInRules = conversionInRules.ToDictionary(cir => cir.ImageFormat, cir => cir);
             this.conversionOutRules = conversionOutRules.ToDictionary(cir => cir.ImageFormat, cir => cir);
             this.transformers = transformers.ToDictionary(tr => tr.Key, tr => tr);
             this.logger = logger;
             configuration = configurationSettings.Value;
+            this.imageConverterContext = imageConverterContext; 
         }
 
         public async Task ConvertImage(string? imageDirectory, string imagePath, string[]? transformerKeys, MagickFormat outputFormat)
@@ -50,7 +50,8 @@ namespace ImageConverter
 
                 lock (sizeLock)
                 {
-                    SumInputSize += inputFileSize;
+                    imageConverterContext.SumInputSize += inputFileSize;
+                    imageConverterContext.Sum.ProcessedBytes += inputFileSize;
                 }
 
                 string outputFileName = GetOutputFileNameWithPath(inputFileInfo, outputExtension);
@@ -112,7 +113,8 @@ namespace ImageConverter
 
                     lock (sizeLock)
                     {
-                        SumOutputSize += outputFileSize;
+                        imageConverterContext.SumOutputSize += outputFileSize;
+                        imageConverterContext.Sum.SumSavedBytes += outputFileSize;
                     }
 
                     var prettyOutputFileSize = PrettySize.Bytes(outputFileSize);

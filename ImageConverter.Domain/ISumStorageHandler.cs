@@ -4,7 +4,7 @@ namespace ImageConverter.Domain
 {
     public interface ISumStorageHandler
     {
-        Task<SumStorage> ReadSumStorage();
-        Task WriteSumStorage(SumStorage sumStorage);
+        SumStorage ReadSumStorage();
+        void WriteSumStorage(SumStorage sumStorage);
     }
 }

@@ -1,9 +1,8 @@
 ﻿using ImageConverter.Domain;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using ImageConverter.Domain.Dto;
 using Quartz;
 
-namespace ImageConverter
+namespace ImageConverter.Web.Server
 {
     public class ApplicationService : BackgroundService
     {
@@ -11,17 +10,23 @@ namespace ImageConverter
         private readonly ISchedulerFactory schedulerFactory;
         private readonly ILogger<ApplicationService> logger;
         private readonly IConfigurationHandler configurationHandler;
+        private readonly ImageConverterJobRegistry imageConverterJobRegistry;
+        private readonly ImageConverterContext imageConverterContext;
 
         public ApplicationService(
-            IHostApplicationLifetime appLifetime, 
-            ISchedulerFactory schedulerFactory, 
-            IConfigurationHandler configurationHandler, 
-            ILogger<ApplicationService> logger)
+            IHostApplicationLifetime appLifetime,
+            ISchedulerFactory schedulerFactory,
+            IConfigurationHandler configurationHandler,
+            ImageConverterContext imageConverterContext,
+            ILogger<ApplicationService> logger,
+            ImageConverterJobRegistry imageConverterJobRegistry)
         {
             this.appLifetime = appLifetime;
             this.schedulerFactory = schedulerFactory;
             this.logger = logger;
-            this.configurationHandler = configurationHandler;
+            this.configurationHandler = configurationHandler;          
+            this.imageConverterJobRegistry = imageConverterJobRegistry;
+            this.imageConverterContext = imageConverterContext;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,17 +37,20 @@ namespace ImageConverter
                 logger.LogInformation("Start cron expression {start}", configuration.Starts!);
 
                 CronExpression exp = new CronExpression(configuration.Starts!);
-                logger.LogInformation("Next fire time: {nextFireTime}", exp.GetNextValidTimeAfter(DateTime.Now)!.Value.ToLocalTime());
-
                 logger.LogInformation("Using {threadNumber} thread(s) for the conversion process.", configuration.ThreadNumber);
 
                 var jobKey = new JobKey(nameof(ImageConverterJob));
                 IJobDetail job = JobBuilder.Create<ImageConverterJob>().WithIdentity(jobKey).Build();
                 ITrigger trigger = TriggerBuilder.Create().WithCronSchedule(configuration.Starts!).Build();
 
+                imageConverterJobRegistry.JobKey = jobKey;
+                imageConverterJobRegistry.Trigger = trigger;
+
                 var scheduler = await schedulerFactory.GetScheduler();
 
                 await scheduler.ScheduleJob(job, trigger);
+
+                UpdateSummaries(configuration, trigger);
 
                 if (configuration.RunAtStart == true)
                 {
@@ -60,6 +68,25 @@ namespace ImageConverter
             {
                 appLifetime.ApplicationStopping.Register(StopQuartzServices);
             }
+        }
+
+        private void UpdateSummaries(ImageConverterConfiguration configuration, ITrigger trigger)
+        {
+            imageConverterContext.Sum.State = ImageConverterStates.NotStarted.ToString();
+
+            DateTimeOffset? nextFireTimeUtc = trigger.GetNextFireTimeUtc();
+            if (nextFireTimeUtc != null)
+            {
+                DateTimeOffset nextFireTime = nextFireTimeUtc.Value.ToLocalTime();
+                imageConverterContext.Sum.NextFire = nextFireTime.Ticks;
+                logger.LogInformation("Next fire time: {nextFireTime}", nextFireTime);
+            }
+            else
+            {
+                logger.LogWarning("Next fire time ({startExpr}) not set!", configuration.Starts!);
+            }
+
+            imageConverterContext.Save();
         }
 
         private void StopQuartzServices()

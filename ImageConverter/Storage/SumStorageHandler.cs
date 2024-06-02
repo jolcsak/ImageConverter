@@ -1,36 +1,53 @@
 ﻿using ImageConverter.Domain;
 using ImageConverter.Domain.Dto;
-using LiteDB;
 using Microsoft.Extensions.Options;
+using SQLite;
 
 namespace ImageConverter.Storage
 {
     public class SumStorageHandler : ISumStorageHandler
     {
-        private const string StorageDb = "storage.db";
         private readonly string storageDbPath;
 
         public SumStorageHandler(IOptions<ImageConverterConfiguration> configurationSettings)
         {
-            storageDbPath = Path.Combine(configurationSettings.Value.StoragePath!, StorageDb);
-        }
-
-        public async Task WriteSumStorage(SumStorage sumStorage)
-        {
-            using (var db = new LiteDatabase(storageDbPath))
+            storageDbPath = Path.Combine(configurationSettings.Value.StoragePath!, Constants.StorageDb);
+            using (var db = new SQLiteConnection(storageDbPath))
             {
-                var col = db.GetCollection<SumStorage>(nameof(SumStorage));
-                col.DeleteAll();
-                col.Insert(sumStorage);
+                db.CreateTable<SumStorage>();
             }
         }
 
-        public async Task<SumStorage> ReadSumStorage()
+        public void WriteSumStorage(SumStorage sumStorage)
         {
-            using (var db = new LiteDatabase(storageDbPath))
+            using (var db = new SQLiteConnection(storageDbPath))
             {
-                var col = db.GetCollection<SumStorage>(nameof(SumStorage));
-                return col.FindAll().FirstOrDefault() ?? new SumStorage(); 
+                var sum = db.Table<SumStorage>().FirstOrDefault();
+                if (sum == null)
+                {
+                    db.Insert(sumStorage);
+                }
+                else
+                {
+                    sum.ProcessedBytes = sumStorage.ProcessedBytes;
+                    sum.SumSavedBytes = sumStorage.SumSavedBytes;
+                    sum.ConvertedImageCount = sumStorage.ConvertedImageCount;
+                    sum.DeletedFileCount = sumStorage.DeletedFileCount;
+                    sum.SumDeleteFileSize = sumStorage.SumDeleteFileSize;
+                    sum.LastStarted = sumStorage.LastStarted;
+                    sum.LastFinished = sumStorage.LastFinished;
+                    sum.NextFire = sumStorage.NextFire;
+                    sum.State = sumStorage.State;
+                    db.Update(sum);
+                }
+            }
+        }
+
+        public SumStorage ReadSumStorage()
+        {
+            using (var db = new SQLiteConnection(storageDbPath))
+            {
+                return db.Table<SumStorage>().FirstOrDefault() ?? new SumStorage();
             }
         }
     }
