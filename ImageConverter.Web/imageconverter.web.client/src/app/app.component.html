@@ -34,12 +34,14 @@
     <td>Saved bytes</td>
     <td>Converted image count</td>
     <td>Deleted file count</td>
+    <td>Error count</td>
   </tr>
   <tr>
     <td>{{ sum.processedBytes | filesize }}</td>
     <td>{{ sum.sumSavedBytes | filesize }}</td>
     <td>{{ sum.convertedImageCount }}</td>
-    <td>{{ sum. deletedFileCount }}</td>
+    <td>{{ sum.deletedFileCount }}</td>
+    <td>{{ sum.errorCount }}</td>
   </tr>
 </table>
 

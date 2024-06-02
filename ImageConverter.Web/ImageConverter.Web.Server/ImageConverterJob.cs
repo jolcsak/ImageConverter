@@ -104,6 +104,11 @@ namespace ImageConverter.Web.Server
                             catch (Exception ex)
                             {
                                 logger.LogError("There is an error during the image conversion: " + ex.Message);
+                                lock (countLock)
+                                {
+                                    imageConverterContext.Sum.ErrorCount++;
+                                    imageConverterContext.Save();
+                                }
                             }
                         }
                     );

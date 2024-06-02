@@ -8,6 +8,7 @@ interface SumStorage {
   sumSavedBytes: number;
   convertedImageCount: number;
   deletedFileCount: number;
+  errorCount: number;
   sumDeleteFileSize: number;
   lastStarted: number;
   lastFinished: number;
@@ -36,6 +37,7 @@ export class AppComponent implements OnInit {
       sumSavedBytes: 0,
       convertedImageCount: 0,
       deletedFileCount: 0,
+      errorCount: 0,
       sumDeleteFileSize: 0,
       lastStarted: 0,
       lastFinished: 0,
@@ -143,7 +145,13 @@ export class AppComponent implements OnInit {
   netTicksToDate(ticks: number): Date {
     const ticksSinceUnixEpoch = ticks - 621355968000000000;
     const milliseconds = ticksSinceUnixEpoch / 10000;
-    return new Date(milliseconds);
+    const date = new Date(milliseconds);
+
+    // Get the local time offset (in minutes) and convert to milliseconds
+    const localTimeOffset = date.getTimezoneOffset() * 60000;
+
+    // Adjust the date to local time
+    return new Date(date.getTime() + localTimeOffset);
   }
     
   title = 'ImageConverter Web Client';

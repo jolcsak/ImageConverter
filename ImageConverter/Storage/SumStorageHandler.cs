@@ -33,6 +33,7 @@ namespace ImageConverter.Storage
                     sum.SumSavedBytes = sumStorage.SumSavedBytes;
                     sum.ConvertedImageCount = sumStorage.ConvertedImageCount;
                     sum.DeletedFileCount = sumStorage.DeletedFileCount;
+                    sum.ErrorCount = sumStorage.ErrorCount;
                     sum.SumDeleteFileSize = sumStorage.SumDeleteFileSize;
                     sum.LastStarted = sumStorage.LastStarted;
                     sum.LastFinished = sumStorage.LastFinished;

@@ -9,6 +9,7 @@ namespace ImageConverter.Domain.Dto
         public long ProcessedBytes { get; set; }
         public long SumSavedBytes { get; set; }
         public long ConvertedImageCount { get; set; }
+        public long ErrorCount { get; set; }
         public long DeletedFileCount { get; set; }
         public long SumDeleteFileSize { get; set; }
         public long LastStarted { get; set; }
