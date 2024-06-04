@@ -33,12 +33,13 @@ namespace ImageConverter.Storage
                     sum.SumSavedBytes = sumStorage.SumSavedBytes;
                     sum.ConvertedImageCount = sumStorage.ConvertedImageCount;
                     sum.DeletedFileCount = sumStorage.DeletedFileCount;
+                    sum.IgnoredFileCount = sumStorage.IgnoredFileCount;
                     sum.ErrorCount = sumStorage.ErrorCount;
                     sum.SumDeleteFileSize = sumStorage.SumDeleteFileSize;
                     sum.LastStarted = sumStorage.LastStarted;
                     sum.LastFinished = sumStorage.LastFinished;
                     sum.NextFire = sumStorage.NextFire;
-                    sum.State = sumStorage.State;
+                    sum.State = sumStorage.State;                   
                     db.Update(sum);
                 }
             }

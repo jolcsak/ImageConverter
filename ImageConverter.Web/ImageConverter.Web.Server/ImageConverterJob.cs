@@ -42,6 +42,7 @@ namespace ImageConverter.Web.Server
 
             long convertedCount = 0;
             long deletedCount = 0;
+            long ignoredCount = 0;
             long sumDeletedFileSize = 0;
 
             imageConverterContext.Sum.State = ImageConverterStates.Running.ToString();
@@ -97,6 +98,12 @@ namespace ImageConverter.Web.Server
                                     }
                                     else
                                     {
+                                        lock (countLock)
+                                        {
+                                            ignoredCount++;
+                                            imageConverterContext.Sum.IgnoredFileCount++;
+                                            imageConverterContext.Save();
+                                        }
                                         logger.LogWarning($"{file}: skipped by skip postfix settings('{configuration.SkipPostfix!}').");
                                     }
                                 }
@@ -126,8 +133,15 @@ namespace ImageConverter.Web.Server
             var prettySavedSumSize = PrettySize.Bytes(imageConverterContext.SumInputSize - imageConverterContext.SumOutputSize);
             var prettySumDeletedFileSize = PrettySize.Bytes(sumDeletedFileSize);
 
-            logger.LogInformation("Conversion done: {convertedCount} files converted, {inputSumSize} -> {outputSumSize}, saved: {savedSumSize}, cleaned #: {deletedCount}, cleaned size: {sumDeletedFileSize}, took {totalSeconds} seconds.",
-                convertedCount, prettyInputSumSize.Format(UnitBase.Base10), prettyOutputSumSize.Format(UnitBase.Base10), prettySavedSumSize.Format(UnitBase.Base10), deletedCount, prettySumDeletedFileSize.Format(UnitBase.Base10), sw.Elapsed.TotalSeconds);
+            logger.LogInformation("Conversion done: {convertedCount} files converted, {inputSumSize} -> {outputSumSize}, saved: {savedSumSize}, cleaned #: {deletedCount}, cleaned size: {sumDeletedFileSize}, ignored #: {ignoredCount}, took {totalSeconds} seconds.",
+                convertedCount, 
+                prettyInputSumSize.Format(UnitBase.Base10), 
+                prettyOutputSumSize.Format(UnitBase.Base10), 
+                prettySavedSumSize.Format(UnitBase.Base10), 
+                deletedCount, 
+                prettySumDeletedFileSize.Format(UnitBase.Base10), 
+                ignoredCount, 
+                sw.Elapsed.TotalSeconds);
 
             LogStatistics(imageConverterContext);
 
@@ -160,11 +174,11 @@ namespace ImageConverter.Web.Server
             var prettySumSavedBytes = PrettySize.Bytes(sumStorage.SumSavedBytes);
             var prettySumDeletedFileSize = PrettySize.Bytes(sumStorage.SumDeleteFileSize);
 
-            logger.LogInformation("******************************************************************************************************");
-            logger.LogInformation("Totally converted images: {convertedImageCount}, processed: {processedBytes}, saved: {sumSavedBytes}, cleaned #: {deletedFileCount}, cleaned: {sumDeletedFileSize}",
+            logger.LogInformation("******************************************************************************************************************");
+            logger.LogInformation("Totally converted images: {convertedImageCount}, processed: {processedBytes}, saved: {sumSavedBytes}, cleaned #: {deletedFileCount}, cleaned: {sumDeletedFileSize}, ignored #: {ignoredCount}",
                 sumStorage.ConvertedImageCount, prettyProcessedBytes.Format(UnitBase.Base10), prettySumSavedBytes.Format(UnitBase.Base10),
-                sumStorage.DeletedFileCount, prettySumDeletedFileSize.Format(UnitBase.Base10));
-            logger.LogInformation("******************************************************************************************************");
+                sumStorage.DeletedFileCount, prettySumDeletedFileSize.Format(UnitBase.Base10), context.Sum.IgnoredFileCount);
+            logger.LogInformation("******************************************************************************************************************");
         }
 
         private static bool IsSkippable(string? skipPostfix, FileInfo fileInfo)

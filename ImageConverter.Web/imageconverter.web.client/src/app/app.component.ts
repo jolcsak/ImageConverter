@@ -1,4 +1,5 @@
 import { HttpClient } from '@angular/common/http';
+import { MatTabsModule } from '@angular/material/tabs';
 import { Component, OnInit } from '@angular/core';
 import { Data } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
@@ -8,6 +9,7 @@ interface SumStorage {
   sumSavedBytes: number;
   convertedImageCount: number;
   deletedFileCount: number;
+  ignoredFileCount: number;
   errorCount: number;
   sumDeleteFileSize: number;
   lastStarted: number;
@@ -37,6 +39,7 @@ export class AppComponent implements OnInit {
       sumSavedBytes: 0,
       convertedImageCount: 0,
       deletedFileCount: 0,
+      ignoredFileCount: 0,
       errorCount: 0,
       sumDeleteFileSize: 0,
       lastStarted: 0,

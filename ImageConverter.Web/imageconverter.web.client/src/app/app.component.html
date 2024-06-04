@@ -8,7 +8,7 @@
   <i class="fa fa-start"></i> Start
 </button>
 
-<button class="stop-button" [disabled]="!isImageConverterJobRunning" (click)="stop()" >
+<button class="stop-button" [disabled]="!isImageConverterJobRunning" (click)="stop()">
   <i class="fa fa-stop"></i> Stop
 </button>
 
@@ -33,21 +33,36 @@
     <td>Processed bytes</td>
     <td>Saved bytes</td>
     <td>Converted image count</td>
-    <td>Deleted file count</td>
-    <td>Error count</td>
   </tr>
   <tr>
     <td>{{ sum.processedBytes | filesize }}</td>
     <td>{{ sum.sumSavedBytes | filesize }}</td>
     <td>{{ sum.convertedImageCount }}</td>
+ </tr>
+</table>
+
+<table *ngIf="sum">
+  <tr>
+    <td>Deleted file count</td>
+    <td>Ignored file count</td>
+    <td>Error count</td>
+  </tr>
+  <tr>
     <td>{{ sum.deletedFileCount }}</td>
+    <td>{{ sum.ignoredFileCount }}</td>
     <td>{{ sum.errorCount }}</td>
   </tr>
 </table>
 
-<div class="log-entries">
-  <div *ngFor="let log of logMessages" class="log-entry">
-    <p style="text-align:left">{{ log.timeStamp }} - {{ log.type }} - {{ log.message }}</p>
-    <hr>
-  </div>
-</div>
+<mat-tab-group animationDuration="0ms">
+  <mat-tab label="Logs">
+    <div class="log-entries">
+      <div *ngFor="let log of logMessages" class="log-entry">
+        <p style="text-align:left">{{ log.timeStamp }} - {{ log.type }} - {{ log.message }}</p>
+        <hr>
+      </div>
+    </div>
+  </mat-tab>
+  <mat-tab label="Reports">Reports</mat-tab>
+</mat-tab-group>
+
