@@ -33,6 +33,7 @@ interface JobSummary {
   deletedFileCount: number;
   ignoredFileCount: number;
   sumDeletedFileSize: number;
+  state: string;
 }
 
 interface Settings {
@@ -86,7 +87,8 @@ export class AppComponent implements OnInit {
     errorCount: 0,
     deletedFileCount: 0,
     ignoredFileCount: 0,
-    sumDeletedFileSize: 0
+    sumDeletedFileSize: 0,
+    state: "not connected"
   };
 
   public isImageConverterJobRunning: boolean = false;

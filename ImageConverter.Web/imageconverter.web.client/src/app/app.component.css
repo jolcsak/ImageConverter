@@ -14,7 +14,11 @@ tr:nth-child(odd) {
 
 th, td {
     padding-left: 1rem;
-    padding-right: 1rem;
+    padding-right: 1rem;    
+}
+
+th {
+  font-weight: 400;
 }
 
 table {
@@ -35,6 +39,10 @@ table {
   cursor: pointer;
   border-radius: 12px; /* Rounded corners */
   transition: background-color 0.3s; /* Smooth transition */
+}
+
+.header {
+    font-weight: bold
 }
 
 .start-button:hover {

@@ -12,6 +12,7 @@
   <i class="fa fa-stop"></i> Stop
 </button>
 
+<p class="header">All jobs</p>
 <table *ngIf="sum">
   <tr>
     <th>State</th>
@@ -27,7 +28,6 @@
     <td *ngIf="!isNextFirePresent">not set</td>
   </tr>
 </table>
-
 <table *ngIf="sum">
   <tr>
     <th>Jobs</th>
@@ -45,14 +45,18 @@
   </tr>
 </table>
 
+<br />
+<p class="header">Current job</p>
 <table *ngIf="jobSum">
   <tr>
+    <th>State</th>
     <th>Processed bytes</th>
     <th>Saved bytes</th>
     <th>Converted image count</th>
     <th>D/I/E</th>
   </tr>
   <tr>
+    <td>{{ jobSum.state }}</td>
     <td>{{ jobSum.inputBytes | filesize }}</td>
     <td>{{ jobSum.inputBytes - jobSum.outputBytes | filesize }}</td>
     <td>{{ jobSum.convertedImageCount }}</td>
@@ -74,6 +78,7 @@
       <tr>
         <th>Job started</th>
         <th>Job finished</th>
+        <th>State</th>
         <th>Processed bytes</th>
         <th>Saved bytes</th>
         <th>Converted image count</th>
@@ -82,6 +87,7 @@
       <tr *ngFor="let jobSum of jobSummaries" class="log-entry">
         <td>{{ jobSum.jobStarted | date:'medium' }}</td>
         <td>{{ jobSum.jobFinished | date:'medium' }}</td>
+        <td>{{ jobSum.state }}</td>
         <td>{{ jobSum.inputBytes | filesize }}</td>
         <td>{{ jobSum.inputBytes - jobSum.outputBytes | filesize }}</td>
         <td>{{ jobSum.convertedImageCount }}</td>

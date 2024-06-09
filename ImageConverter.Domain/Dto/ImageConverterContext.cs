@@ -39,7 +39,7 @@ namespace ImageConverter.Domain.Dto
             Sum.LastStarted = jobStarted;
             Sum.JobCount++;
 
-            JobSummary = new JobSummary { JobStarted = jobStarted };
+            JobSummary = new JobSummary { JobStarted = jobStarted, State = Sum.State };
 
             Save();
 
@@ -130,6 +130,7 @@ namespace ImageConverter.Domain.Dto
 
             Sum.LastFinished = DateTime.Now;
             JobSummary.JobFinished = Sum.LastFinished;
+            JobSummary.State = Sum.State;
             Save();
         }
 

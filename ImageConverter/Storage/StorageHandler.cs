@@ -47,7 +47,17 @@ namespace ImageConverter.Storage
         {
             using (var db = new SQLiteConnection(storageDbPath))
             {
-                if (jobSummary.Id == 0) { 
+                if (jobSummary.Id == 0) {
+                    var runningState = ImageConverterStates.Running.ToString();
+                    var falseRunningJobs = db.Table<JobSummary>().Where(js => js.State == runningState).ToList();
+                    if (falseRunningJobs.Any())
+                    {
+                        foreach (var job in falseRunningJobs)
+                        {
+                            job.State = ImageConverterStates.Cancelled.ToString();
+                        }
+                        db.UpdateAll(falseRunningJobs);
+                    }
                     db.Insert(jobSummary);
                 }
                 else

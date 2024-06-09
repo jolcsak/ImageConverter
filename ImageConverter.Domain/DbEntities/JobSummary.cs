@@ -16,5 +16,6 @@ namespace ImageConverter.Domain.DbEntities
         public long DeletedFileCount { get; set; }
         public long IgnoredFileCount { get; set; }
         public long SumDeletedFileSize { get; set; }
+        public string? State { get; set; }
     }
 }

@@ -23,7 +23,7 @@ string logDbPath = Path.Combine(configuration?.StoragePath ?? string.Empty, Cons
 var logger = new LoggerConfiguration()
 .MinimumLevel.Debug()
 .WriteTo.Console(theme: AnsiConsoleTheme.None)
-.WriteTo.SQLite(sqliteDbPath: logDbPath, batchSize: 1)
+.WriteTo.SQLite(sqliteDbPath: logDbPath, batchSize: 1, retentionPeriod: new TimeSpan(7, 0, 0, 0))
 .CreateLogger();
 
 builder.Logging.ClearProviders();
