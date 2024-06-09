@@ -1,6 +1,6 @@
 <h1 id="tableLabel">Image Converter client</h1>
 
-<p style="text-align:left">Server Time: {{ sum.currentDate | date:'yyyy-MM-dd HH:mm:ss' }}</p>
+<p style="text-align:left">Server Time: {{ sum.currentDate | date:'medium' }}</p>
 
 <p *ngIf="!sum"><em>Loading... </em></p>
 
@@ -14,43 +14,49 @@
 
 <table *ngIf="sum">
   <tr>
-    <td>State</td>
-    <td>Last Started</td>
-    <td>Last Finished</td>
-    <td>Next Start</td>
+    <th>State</th>
+    <th>Last Started</th>
+    <th>Last Finished</th>
+    <th>Next Start</th>
   </tr>
   <tr>
     <td>{{ sum.state }}</td>
-    <td>{{ sum.lastStartDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
-    <td>{{ sum.lastFinishDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
-    <td *ngIf="isNextFirePresent">{{ sum.nextFireDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+    <td>{{ sum.lastStartDate | date:'medium' }}</td>
+    <td>{{ sum.lastFinishDate | date:'medium' }}</td>
+    <td *ngIf="isNextFirePresent">{{ sum.nextFireDate | date:'medium' }}</td>
     <td *ngIf="!isNextFirePresent">not set</td>
   </tr>
 </table>
 
 <table *ngIf="sum">
   <tr>
-    <td>Processed bytes</td>
-    <td>Saved bytes</td>
-    <td>Converted image count</td>
+    <th>Jobs</th>
+    <th>Processed bytes</th>
+    <th>Saved bytes</th>
+    <th>Converted image count</th>
+    <th>D/I/E</th>
   </tr>
   <tr>
-    <td>{{ sum.processedBytes | filesize }}</td>
-    <td>{{ sum.sumSavedBytes | filesize }}</td>
+    <td>{{ sum.jobCount }}</td>
+    <td>{{ sum.inputBytes | filesize }}</td>
+    <td>{{ sum.inputBytes - sum.outputBytes | filesize }}</td>
     <td>{{ sum.convertedImageCount }}</td>
- </tr>
+    <td>{{ sum.deletedFileCount }}/{{ sum.ignoredFileCount }}/{{ sum.errorCount }}</td>
+  </tr>
 </table>
 
-<table *ngIf="sum">
+<table *ngIf="jobSum">
   <tr>
-    <td>Deleted file count</td>
-    <td>Ignored file count</td>
-    <td>Error count</td>
+    <th>Processed bytes</th>
+    <th>Saved bytes</th>
+    <th>Converted image count</th>
+    <th>D/I/E</th>
   </tr>
   <tr>
-    <td>{{ sum.deletedFileCount }}</td>
-    <td>{{ sum.ignoredFileCount }}</td>
-    <td>{{ sum.errorCount }}</td>
+    <td>{{ jobSum.inputBytes | filesize }}</td>
+    <td>{{ jobSum.inputBytes - jobSum.outputBytes | filesize }}</td>
+    <td>{{ jobSum.convertedImageCount }}</td>
+    <td>{{ jobSum.deletedFileCount }}/{{ jobSum.ignoredFileCount }}/{{ jobSum.errorCount }}</td>
   </tr>
 </table>
 
@@ -63,6 +69,25 @@
       </div>
     </div>
   </mat-tab>
-  <mat-tab label="Reports">Reports</mat-tab>
+  <mat-tab label="Reports">
+    <table style="margin-left:0px">
+      <tr>
+        <th>Job started</th>
+        <th>Job finished</th>
+        <th>Processed bytes</th>
+        <th>Saved bytes</th>
+        <th>Converted image count</th>
+        <th>D/I/E</th>
+      </tr>
+      <tr *ngFor="let jobSum of jobSummaries" class="log-entry">
+        <td>{{ jobSum.jobStarted | date:'medium' }}</td>
+        <td>{{ jobSum.jobFinished | date:'medium' }}</td>
+        <td>{{ jobSum.inputBytes | filesize }}</td>
+        <td>{{ jobSum.inputBytes - jobSum.outputBytes | filesize }}</td>
+        <td>{{ jobSum.convertedImageCount }}</td>
+        <td>{{ jobSum.deletedFileCount }}/{{ jobSum.ignoredFileCount }}/{{ jobSum.errorCount }}</td>
+      </tr>
+    </table>
+  </mat-tab>
 </mat-tab-group>
 

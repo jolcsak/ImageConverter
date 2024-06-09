@@ -1,4 +1,5 @@
 using ImageConverter.Domain;
+using ImageConverter.Domain.DbEntities;
 using ImageConverter.Domain.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -12,6 +13,7 @@ namespace ImageConverter.Web.Server.Controllers
     public class ImageConverterController : ControllerBase
     {
         private const int LogCount = 15;
+        private const int JobSummaryCount = 20;
 
         private readonly string storageLogPath;
         private readonly string sumStoragePath;
@@ -79,11 +81,32 @@ namespace ImageConverter.Web.Server.Controllers
         }
 
         [HttpGet]
-        public SumStorage GetSummaries()
+        public IEnumerable<JobSummary> GetJobSummaries()
         {
             using (var db = new SQLiteConnection(sumStoragePath))
             {
-                return db.Table<SumStorage>().FirstOrDefault() ?? new SumStorage();
+                return db.Table<JobSummary>()
+                    .OrderByDescending(l => l.Id)
+                    .Take(JobSummaryCount)
+                    .ToArray();
+            }
+        }
+
+        [HttpGet]
+        public ImageConverterSummary GetImageConverterSummary()
+        {
+            using (var db = new SQLiteConnection(sumStoragePath))
+            {
+                return db.Table<ImageConverterSummary>().FirstOrDefault() ?? new ImageConverterSummary();
+            }
+        }
+
+        [HttpGet]
+        public JobSummary GetJobSummary()
+        {
+            using (var db = new SQLiteConnection(sumStoragePath))
+            {
+                return db.Table<JobSummary>().LastOrDefault() ?? new JobSummary();
             }
         }
 

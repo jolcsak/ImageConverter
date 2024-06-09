@@ -18,6 +18,7 @@ th, td {
 }
 
 table {
+    text-align: left;
     margin: 0 auto;
 }
 

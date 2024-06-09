@@ -77,8 +77,8 @@ namespace ImageConverter.Web.Server
             DateTimeOffset? nextFireTimeUtc = trigger.GetNextFireTimeUtc();
             if (nextFireTimeUtc != null)
             {
-                DateTimeOffset nextFireTime = nextFireTimeUtc.Value.ToLocalTime();
-                imageConverterContext.Sum.NextFire = nextFireTime.Ticks;
+                DateTime nextFireTime = nextFireTimeUtc.Value.LocalDateTime;
+                imageConverterContext.Sum.NextFire = nextFireTime;
                 logger.LogInformation("Next fire time: {nextFireTime}", nextFireTime);
             }
             else
@@ -86,7 +86,7 @@ namespace ImageConverter.Web.Server
                 logger.LogWarning("Next fire time ({startExpr}) not set!", configuration.Starts!);
             }
 
-            imageConverterContext.Save();
+            imageConverterContext.Save(saveJobSummary: false);
         }
 
         private void StopQuartzServices()

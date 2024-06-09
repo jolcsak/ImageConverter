@@ -24,7 +24,7 @@ namespace ImageConverter
 
             app.Services.AddTransient<IFileCleaner, FileCleaner>();
 
-            app.Services.AddSingleton<ISumStorageHandler, SumStorageHandler>();
+            app.Services.AddSingleton<IStorageHandler, StorageHandler>();
 
             app.Services.AddSingleton<ImageConverterContext>();
 

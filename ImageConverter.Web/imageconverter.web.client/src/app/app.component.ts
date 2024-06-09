@@ -4,22 +4,35 @@ import { Component, OnInit } from '@angular/core';
 import { Data } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 
-interface SumStorage {
-  processedBytes: number;
-  sumSavedBytes: number;
+interface ImageConverterSummary {
+  inputBytes: number;
+  outputBytes: number;
   convertedImageCount: number;
   deletedFileCount: number;
   ignoredFileCount: number;
   errorCount: number;
   sumDeleteFileSize: number;
-  lastStarted: number;
-  lastFinished: number;
-  nextFire: number;
+  lastStarted: Date;
+  lastFinished: Date;
+  nextFire: Date;
   state: string;
   lastStartDate: Date;
   lastFinishDate: Date;
   nextFireDate: Date;
   currentDate: Date;
+  jobCount: number;
+}
+
+interface JobSummary {
+  jobStarted: Date;
+  jobFinished: Date;
+  inputBytes: number;
+  outputBytes: number;
+  convertedImageCount: number;
+  errorCount: number;
+  deletedFileCount: number;
+  ignoredFileCount: number;
+  sumDeletedFileSize: number;
 }
 
 interface LogMessage {
@@ -34,27 +47,41 @@ interface LogMessage {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  public sum: SumStorage = {
-      processedBytes: 0,
-      sumSavedBytes: 0,
+  public sum: ImageConverterSummary = {
+      inputBytes: 0,
+      outputBytes: 0,
       convertedImageCount: 0,
       deletedFileCount: 0,
       ignoredFileCount: 0,
       errorCount: 0,
       sumDeleteFileSize: 0,
-      lastStarted: 0,
-      lastFinished: 0,
-      nextFire: 0,
+      lastStarted: new Date(),
+      lastFinished: new Date(),
+      nextFire: new Date(),
       state: "not connected",
       lastStartDate: new Date(),
       lastFinishDate: new Date(),
       nextFireDate: new Date(),
       currentDate: new Date(),
+      jobCount: 0,
+  };
+
+  public jobSum: JobSummary = {
+    jobStarted: new Date(),
+    jobFinished: new Date(),
+    inputBytes: 0,
+    outputBytes: 0,
+    convertedImageCount: 0,
+    errorCount: 0,
+    deletedFileCount: 0,
+    ignoredFileCount: 0,
+    sumDeletedFileSize: 0
   };
 
   public isImageConverterJobRunning: boolean = false;
   public isNextFirePresent: boolean = false;
   public logMessages: LogMessage[] = [];
+  public jobSummaries: JobSummary[] = [];
 
   private subscription: Subscription = new Subscription();
   
@@ -70,6 +97,8 @@ export class AppComponent implements OnInit {
   }
 
   startPolling(): void {
+    this.getLogMessages();
+
     const logPolling = interval(1000).subscribe(() => {
       this.refreshContent();
     });
@@ -83,6 +112,8 @@ export class AppComponent implements OnInit {
     if (this.isImageConverterJobRunning) {
       this.getLogMessages();
     }
+
+    this.getJobSummaries();
   }
 
   start() {
@@ -119,19 +150,29 @@ export class AppComponent implements OnInit {
   }
 
   getSummaries() {
-    this.http.get<SumStorage>('/ImageConverter/GetSummaries').subscribe(
+    this.http.get<ImageConverterSummary>('/ImageConverter/GetImageConverterSummary').subscribe(
       (result) => {
         this.sum = result;
-        this.sum.lastStartDate = this.netTicksToDate(result.lastStarted);
-        this.sum.lastFinishDate = this.netTicksToDate(result.lastFinished);
-        this.sum.nextFireDate = this.netTicksToDate(result.nextFire);
+        this.sum.lastStartDate = result.lastStarted;
+        this.sum.lastFinishDate = result.lastFinished;
+        this.sum.nextFireDate = result.nextFire;
         this.sum.currentDate = new Date();
-        this.isNextFirePresent = result.nextFire > 0;
+        this.isNextFirePresent = result.nextFire != null;
       },
       (error) => {
         console.error(error);
       }
     );
+
+    this.http.get<JobSummary>('/ImageConverter/GetJobSummary').subscribe(
+      (result) => {
+        this.jobSum = result;
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+
   }
 
   getLogMessages() {
@@ -145,17 +186,16 @@ export class AppComponent implements OnInit {
     );
   }
 
-  netTicksToDate(ticks: number): Date {
-    const ticksSinceUnixEpoch = ticks - 621355968000000000;
-    const milliseconds = ticksSinceUnixEpoch / 10000;
-    const date = new Date(milliseconds);
-
-    // Get the local time offset (in minutes) and convert to milliseconds
-    const localTimeOffset = date.getTimezoneOffset() * 60000;
-
-    // Adjust the date to local time
-    return new Date(date.getTime() + localTimeOffset);
+  getJobSummaries() {
+    this.http.get<JobSummary[]>('/ImageConverter/GetJobSummaries').subscribe(
+      (result) => {
+        this.jobSummaries = result;
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
   }
-    
+
   title = 'ImageConverter Web Client';
 }

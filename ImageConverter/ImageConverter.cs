@@ -9,8 +9,6 @@ namespace ImageConverter
 {
     public class ImageConverter : IImageConverter
     {
-        private static object sizeLock = new object();
-
         private readonly Dictionary<MagickFormat, IConversionInRule> conversionInRules;
         private readonly Dictionary<MagickFormat, IConversionOutRule> conversionOutRules;
 
@@ -35,7 +33,7 @@ namespace ImageConverter
             this.imageConverterContext = imageConverterContext; 
         }
 
-        public async Task ConvertImage(string? imageDirectory, string imagePath, string[]? transformerKeys, MagickFormat outputFormat)
+        public async Task<long?> ConvertImage(string? imageDirectory, string imagePath, string[]? transformerKeys, MagickFormat outputFormat)
         {
             try
             {
@@ -48,12 +46,6 @@ namespace ImageConverter
 
                 string relativeInputFilePath = Path.GetRelativePath(imageDirectory!, inputFileInfo.FullName);
 
-                lock (sizeLock)
-                {
-                    imageConverterContext.SumInputSize += inputFileSize;
-                    imageConverterContext.Sum.ProcessedBytes += inputFileSize;
-                }
-
                 string outputFileName = GetOutputFileNameWithPath(inputFileInfo, outputExtension);
 
                 using (var image = new MagickImage(imagePath))
@@ -63,7 +55,7 @@ namespace ImageConverter
                         if (!inRule.SetImage(image))
                         {
                             logger.LogWarning("Skipping image because of in rule '{imageFormat}'.", inRule.ImageFormat);
-                            return;
+                            return null;
                         }
                     }                        
 
@@ -82,7 +74,7 @@ namespace ImageConverter
                         if (!outRule.SetImage(image))
                         {
                             logger.LogWarning("Skipping image because of out rule '{imageFormat}'.", outRule.ImageFormat);
-                            return;
+                            return null;
                         }
                     }
 
@@ -107,15 +99,7 @@ namespace ImageConverter
                         }
                     } while (!imageProcessed);
 
-
-                    var outputFileInfo = new FileInfo(outputFileName);
-                    long outputFileSize = outputFileInfo.Length;
-
-                    lock (sizeLock)
-                    {
-                        imageConverterContext.SumOutputSize += outputFileSize;
-                        imageConverterContext.Sum.SumSavedBytes += outputFileSize;
-                    }
+                    long outputFileSize = new FileInfo(outputFileName).Length;
 
                     var prettyOutputFileSize = PrettySize.Bytes(outputFileSize);
 
@@ -126,6 +110,8 @@ namespace ImageConverter
                         prettyInputFileSize.Format(UnitBase.Base10), 
                         outputFormat, image.Width, image.Height, image.Quality, prettyOutputFileSize.Format(UnitBase.Base10)
                         );
+
+                    return outputFileSize;
                 }
             }
             catch (MagickCorruptImageErrorException mciex)
@@ -136,6 +122,8 @@ namespace ImageConverter
             {
                 GC.Collect();
             }
+
+            return null;
         }
 
         private static string GetOutputFileNameWithPath(FileInfo fileInfo, string extension)
