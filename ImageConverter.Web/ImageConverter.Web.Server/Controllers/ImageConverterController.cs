@@ -19,8 +19,9 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly string sumStoragePath;
 
         private readonly ISchedulerFactory schedulerFactory;
-        private readonly ILogger<ImageConverterController> logger;
+        private readonly ILogger<ImageConverterController> logger;      
         private readonly ImageConverterJobRegistry imageConverterJobRegistry;
+        private readonly ImageConverterConfiguration configuration;
 
         public ImageConverterController(
             IOptions<ImageConverterConfiguration> configurationSettings, 
@@ -28,8 +29,10 @@ namespace ImageConverter.Web.Server.Controllers
             ISchedulerFactory schedulerFactory,
             ImageConverterJobRegistry imageConverterJobRegistry)
         {
-            storageLogPath = Path.Combine(configurationSettings.Value.StoragePath!, Constants.LogsDb);
-            sumStoragePath = Path.Combine(configurationSettings.Value.StoragePath!, Constants.StorageDb);
+            configuration = configurationSettings.Value;
+
+            storageLogPath = Path.Combine(configuration.StoragePath!, Constants.LogsDb);
+            sumStoragePath = Path.Combine(configuration.StoragePath!, Constants.StorageDb);
             this.schedulerFactory = schedulerFactory;
             this.logger = logger;
             this.imageConverterJobRegistry = imageConverterJobRegistry;
@@ -66,6 +69,18 @@ namespace ImageConverter.Web.Server.Controllers
             }
 
             return string.Empty;
+        }
+
+        [HttpGet]
+        public SettingsDto GetSettings()
+        {
+            return new SettingsDto()
+            {
+                ServerTime = DateTime.UtcNow,
+                ThreadCount = 
+                    configuration.ThreadNumber.HasValue? 
+                        configuration.ThreadNumber.Value : Environment.ProcessorCount
+            };
         }
 
         [HttpGet]

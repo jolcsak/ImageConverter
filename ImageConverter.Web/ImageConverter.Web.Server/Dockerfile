@@ -6,18 +6,14 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS with-node
-RUN apt-get update
-RUN apt-get install curl
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
-RUN apt-get -y install nodejs
-RUN npm install -g @angular/cli
-
-FROM with-node AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["ImageConverter.Web/imageconverter.web.client/nuget.config", "ImageConverter.Web/imageconverter.web.client/"]
 COPY ["ImageConverter.Web/ImageConverter.Web.Server/ImageConverter.Web.Server.csproj", "ImageConverter.Web/ImageConverter.Web.Server/"]
-COPY ["imageconverter.web.client/imageconverter.web.client.esproj", "imageconverter.web.client/"]
+COPY ["ImageConverter.Domain/ImageConverter.Domain.csproj", "ImageConverter.Domain/"]
+COPY ["ImageConverter/ImageConverter.csproj", "ImageConverter/"]
+COPY ["ImageConverter.Web/imageconverter.web.client/Imageconverter.Web.Client.esproj", "ImageConverter.Web/imageconverter.web.client/"]
 RUN dotnet restore "./ImageConverter.Web/ImageConverter.Web.Server/ImageConverter.Web.Server.csproj"
 COPY . .
 WORKDIR "/src/ImageConverter.Web/ImageConverter.Web.Server"

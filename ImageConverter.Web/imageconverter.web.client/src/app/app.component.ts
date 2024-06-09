@@ -35,6 +35,11 @@ interface JobSummary {
   sumDeletedFileSize: number;
 }
 
+interface Settings {
+  serverTime: Date;
+  threadCount: number;
+}
+
 interface LogMessage {
   type?: string;
   timeStamp?: string;
@@ -47,6 +52,12 @@ interface LogMessage {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+
+  public settings: Settings = {
+    serverTime: new Date(),
+    threadCount: 0
+  }
+
   public sum: ImageConverterSummary = {
       inputBytes: 0,
       outputBytes: 0,
@@ -108,6 +119,7 @@ export class AppComponent implements OnInit {
 
   private refreshContent() {
     this.getIsImageConverterJobRunning();
+    this.getSettings();
     this.getSummaries();
     if (this.isImageConverterJobRunning) {
       this.getLogMessages();
@@ -131,6 +143,17 @@ export class AppComponent implements OnInit {
     this.http.get<string>('/ImageConverter/StopJob').subscribe(
       (result) => {
        
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
+  getSettings() {
+    this.http.get<Settings>('/ImageConverter/GetSettings').subscribe(
+      (result) => {
+        this.settings = result;
       },
       (error) => {
         console.error(error);

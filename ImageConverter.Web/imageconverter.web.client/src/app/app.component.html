@@ -1,6 +1,6 @@
 <h1 id="tableLabel">Image Converter client</h1>
 
-<p style="text-align:left">Server Time: {{ sum.currentDate | date:'medium' }}</p>
+<p style="text-align:left">Server Time: {{ settings.serverTime | date:'medium' }} - Thread count: {{ settings.threadCount }}</p>
 
 <p *ngIf="!sum"><em>Loading... </em></p>
 
