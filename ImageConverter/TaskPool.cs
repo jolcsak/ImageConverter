@@ -22,7 +22,7 @@ namespace ImageConverter
             tasks.Enqueue(task);
         }
 
-        public async Task ExecuteTasksAsync()
+        public async Task ExecuteTasksAsync(CancellationToken cancellationToken)
         {
             var tasks = new List<Task>();
 
@@ -30,7 +30,7 @@ namespace ImageConverter
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    while (this.tasks.TryDequeue(out var task))
+                    while (!cancellationToken.IsCancellationRequested && this.tasks.TryDequeue(out var task))
                     {
                         await _semaphore.WaitAsync();
                         try
@@ -42,7 +42,7 @@ namespace ImageConverter
                             _semaphore.Release();
                         }
                     }
-                }));
+                }, cancellationToken));
             }
 
             await Task.WhenAll(tasks);

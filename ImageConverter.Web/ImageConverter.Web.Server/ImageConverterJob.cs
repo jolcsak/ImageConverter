@@ -39,7 +39,7 @@ namespace ImageConverter.Web.Server
             imageConverterContext.OnJobStarted();
 
             queueHandler.Enqueue();
-            await queueHandler.DequeueAsync(DequeueAsync);
+            await queueHandler.DequeueAsync(DequeueAsync, context.CancellationToken);
 
             imageConverterContext.OnJobFinished(context);
         }

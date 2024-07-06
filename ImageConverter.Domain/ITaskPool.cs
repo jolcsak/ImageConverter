@@ -3,6 +3,6 @@
     public interface ITaskPool
     {
         void EnqueueTask(Func<Task> task);
-        Task ExecuteTasksAsync();
+        Task ExecuteTasksAsync(CancellationToken cancellationToken);
     }
 }

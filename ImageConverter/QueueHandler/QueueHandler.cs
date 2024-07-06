@@ -64,7 +64,7 @@ namespace ImageConverter.QueueHandler
             logger.LogInformation("Processing queue done");
         }
 
-        public async Task DequeueAsync(Func<QueueItem, Task> task)
+        public async Task DequeueAsync(Func<QueueItem, Task> task, CancellationToken cancellationToken)
         {
             using (var db = storageHandler.GetConnection())
             {
@@ -72,7 +72,7 @@ namespace ImageConverter.QueueHandler
                 {
                     taskPool.EnqueueTask(() => task(queue));
                 }
-                await taskPool.ExecuteTasksAsync();
+                await taskPool.ExecuteTasksAsync(cancellationToken);
             }
 
         }
