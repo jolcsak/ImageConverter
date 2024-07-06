@@ -33,19 +33,18 @@ namespace ImageConverter
             this.imageConverterContext = imageConverterContext; 
         }
 
-        public async Task<long?> ConvertImage(string? imageDirectory, string imagePath, string[]? transformerKeys, MagickFormat outputFormat)
+        public async Task<long?> ConvertImage(string basePath, FileInfo inputFileInfo, string[]? transformerKeys, MagickFormat outputFormat)
         {
             try
             {
                 string outputExtension = outputFormat.ToString();
+                string imagePath = inputFileInfo.FullName;
                 var imageInfo = new MagickImageInfo(imagePath);
 
-                var inputFileInfo = new FileInfo(imagePath);
                 long inputFileSize = inputFileInfo.Length;
                 var prettyInputFileSize = PrettySize.Bytes(inputFileSize);
 
-                string relativeInputFilePath = Path.GetRelativePath(imageDirectory!, inputFileInfo.FullName);
-
+                string relativeInputFilePath = Path.GetRelativePath(basePath, inputFileInfo.FullName);
                 string outputFileName = GetOutputFileNameWithPath(inputFileInfo, outputExtension);
 
                 using (var image = new MagickImage(imagePath))
@@ -116,7 +115,7 @@ namespace ImageConverter
             }
             catch (MagickCorruptImageErrorException mciex)
             {
-                logger.LogError(mciex.Message, "{imagePath}", imagePath);
+                logger.LogError(mciex.Message, "{basePath}", basePath);
             }
             finally
             {

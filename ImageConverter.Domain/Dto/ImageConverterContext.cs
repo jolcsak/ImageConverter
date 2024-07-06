@@ -34,6 +34,8 @@ namespace ImageConverter.Domain.Dto
         {
             jobStarted = DateTime.Now;
 
+            storageHandler.CancelRunningJobsInStorage();
+
             Sum = storageHandler.ReadImageConverterSummary();
             Sum.State = ImageConverterStates.Running.ToString();
             Sum.LastStarted = jobStarted;
@@ -46,27 +48,23 @@ namespace ImageConverter.Domain.Dto
             sw = Stopwatch.StartNew();
         }
 
-        public void Save(bool saveJobSummary = true)
+        public void Save(QueueItem? updateQueueItem = null, QueueItem? deleteQueueItem = null, bool saveJobSummary = true)
         {
-            storageHandler.WriteImageConvertSummary(Sum);
-            if (saveJobSummary)
-            {
-                storageHandler.WriteJobSummary(JobSummary);
-            }
+            storageHandler.Save(Sum, saveJobSummary ? JobSummary : null, updateQueueItem, deleteQueueItem);
         }
 
-        public void OnFileDeleted(long fileSize)
+        public void OnFileDeleted(QueueItem queueItem, long fileSize)
         {
             lock (lockObject)
             {
                 JobSummary.DeletedFileCount++;
                 JobSummary.SumDeletedFileSize += fileSize;
                 Sum.DeletedFileCount++;
-                Save();
+                Save(deleteQueueItem: queueItem);
             }
         }
 
-        public void OnImageConverted(long inputFileSize, long? outputFileSize)
+        public void OnImageConverted(QueueItem queueItem, FileInfo inputFileInfo, long? outputFileSize)
         {
             if (outputFileSize == null)
             {
@@ -75,35 +73,40 @@ namespace ImageConverter.Domain.Dto
 
             lock (lockObject)
             {
-                Sum.InputBytes += inputFileSize;
+
+                Sum.InputBytes += inputFileInfo.Length;
                 Sum.OutputBytes += outputFileSize.Value;
                 Sum.ConvertedImageCount++;
 
-                JobSummary.InputBytes += inputFileSize;
+                JobSummary.InputBytes += inputFileInfo.Length;
                 JobSummary.OutputBytes += outputFileSize.Value;
                 JobSummary.ConvertedImageCount++;
 
-                Save();
+                inputFileInfo.Delete();
+
+                Save(deleteQueueItem: queueItem);
             }
         }
 
-        public void OnImageIgnored()
+        public void OnImageIgnored(QueueItem queueItem)
         {
             lock (lockObject)
             {
                 JobSummary.IgnoredFileCount++;
                 Sum.IgnoredFileCount++;
-                Save();
+                queueItem.State = (byte)QueueState.Ignored;
+                Save(updateQueueItem:queueItem);
             }
         }
 
-        public void OnImageConvertFailed()
+        public void OnImageConvertFailed(QueueItem queueItem)
         {
             lock (lockObject)
             {
                 JobSummary.ErrorCount++;
                 Sum.ErrorCount++;
-                Save();
+                queueItem.State = (byte)QueueState.Error;
+                Save(updateQueueItem: queueItem);
             }
         }
 

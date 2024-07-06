@@ -34,6 +34,8 @@ namespace ImageConverter
 
             app.Services.AddSingleton<IConfigurationHandler, ConfigurationHandler>();
 
+            app.Services.AddSingleton<ITaskPool, TaskPool>();
+
             app.Services.AddOptions();
         }
     }
