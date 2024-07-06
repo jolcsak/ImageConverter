@@ -46,7 +46,7 @@ namespace ImageConverter.QueueHandler
                             QueueItem queue = new QueueItem { 
                                 BaseDirectory = imageDirectory, 
                                 FullPath = filePath, 
-                                State = (byte)QueueState.Queued 
+                                State = (byte)QueueItemState.Queued 
                             };
                             db.Insert(queue);
                             logger.LogInformation($"New item added to the queue: {queue.FullPath}");
@@ -68,13 +68,13 @@ namespace ImageConverter.QueueHandler
         {
             using (var db = storageHandler.GetConnection())
             {
-                foreach (QueueItem queue in db.Table<QueueItem>().Where(q => q.State == (byte)QueueState.Queued))
+                foreach (QueueItem queueItem in db.Table<QueueItem>().Where(q => q.State == (byte)QueueItemState.Queued))
                 {
-                    taskPool.EnqueueTask(() => task(queue));
+                    taskPool.EnqueueTask(() => task(queueItem));
                 }
-                await taskPool.ExecuteTasksAsync(cancellationToken);
             }
 
+            await taskPool.ExecuteTasksAsync(cancellationToken);
         }
 
         private bool IsProcessable(string filePath)

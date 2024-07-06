@@ -22,12 +22,14 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly ILogger<ImageConverterController> logger;      
         private readonly ImageConverterJobRegistry imageConverterJobRegistry;
         private readonly ImageConverterConfiguration configuration;
+        private readonly ITaskPool taskPool;
 
         public ImageConverterController(
             IOptions<ImageConverterConfiguration> configurationSettings, 
             ILogger<ImageConverterController> logger,
             ISchedulerFactory schedulerFactory,
-            ImageConverterJobRegistry imageConverterJobRegistry)
+            ImageConverterJobRegistry imageConverterJobRegistry,
+            ITaskPool taskPool)
         {
             configuration = configurationSettings.Value;
 
@@ -36,6 +38,7 @@ namespace ImageConverter.Web.Server.Controllers
             this.schedulerFactory = schedulerFactory;
             this.logger = logger;
             this.imageConverterJobRegistry = imageConverterJobRegistry;
+            this.taskPool = taskPool;
         }
 
         [HttpGet]
@@ -74,12 +77,13 @@ namespace ImageConverter.Web.Server.Controllers
         [HttpGet]
         public SettingsDto GetSettings()
         {
-            return new SettingsDto()
+            return new SettingsDto
             {
                 ServerTime = DateTime.UtcNow,
                 ThreadCount = 
                     configuration.ThreadNumber.HasValue? 
-                        configuration.ThreadNumber.Value : Environment.ProcessorCount
+                        configuration.ThreadNumber.Value : Environment.ProcessorCount,
+                QueueLength = taskPool.QueueLength
             };
         }
 

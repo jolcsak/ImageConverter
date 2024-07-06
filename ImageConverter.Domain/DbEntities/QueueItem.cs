@@ -3,7 +3,7 @@
 namespace ImageConverter.Domain.DbEntities
 {
     [Flags]
-    public enum QueueState
+    public enum QueueItemState
     {
         Queued = 0,
         Processed = 1,

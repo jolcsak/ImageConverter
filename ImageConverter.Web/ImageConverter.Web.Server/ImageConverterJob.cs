@@ -55,8 +55,7 @@ namespace ImageConverter.Web.Server
                 {
                     if (!fileInfo.Exists)
                     {
-                        long fileLength = fileInfo.Length;
-                        imageConverterContext.OnFileDeleted(queueItem, fileLength);
+                        imageConverterContext.OnFileDeleted(queueItem, fileInfo.Length);
                     }
                 }
                 else 

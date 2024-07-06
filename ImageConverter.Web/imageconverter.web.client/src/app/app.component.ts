@@ -39,6 +39,7 @@ interface JobSummary {
 interface Settings {
   serverTime: Date;
   threadCount: number;
+  queueLength: number;
 }
 
 interface LogMessage {
@@ -56,7 +57,8 @@ export class AppComponent implements OnInit {
 
   public settings: Settings = {
     serverTime: new Date(),
-    threadCount: 0
+    threadCount: 0,
+    queueLength: 0
   }
 
   public sum: ImageConverterSummary = {

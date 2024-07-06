@@ -84,6 +84,7 @@ namespace ImageConverter.Domain.Dto
 
                 inputFileInfo.Delete();
 
+                queueItem.State = (byte)QueueItemState.Processed;
                 Save(deleteQueueItem: queueItem);
             }
         }
@@ -94,7 +95,7 @@ namespace ImageConverter.Domain.Dto
             {
                 JobSummary.IgnoredFileCount++;
                 Sum.IgnoredFileCount++;
-                queueItem.State = (byte)QueueState.Ignored;
+                queueItem.State = (byte)QueueItemState.Ignored;
                 Save(updateQueueItem:queueItem);
             }
         }
@@ -105,7 +106,7 @@ namespace ImageConverter.Domain.Dto
             {
                 JobSummary.ErrorCount++;
                 Sum.ErrorCount++;
-                queueItem.State = (byte)QueueState.Error;
+                queueItem.State = (byte)QueueItemState.Error;
                 Save(updateQueueItem: queueItem);
             }
         }

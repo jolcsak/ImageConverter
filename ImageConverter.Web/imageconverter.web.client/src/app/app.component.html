@@ -52,6 +52,7 @@
     <th>State</th>
     <th>Processed</th>
     <th>Saved</th>
+    <th>Queue length</th>
     <th>Converted image count</th>
     <th>D/I/E</th>
   </tr>
@@ -59,6 +60,7 @@
     <td>{{ jobSum.state }}</td>
     <td>{{ jobSum.inputBytes | filesize }}</td>
     <td>{{ jobSum.inputBytes - jobSum.outputBytes | filesize }}</td>
+    <td>{{ settings.queueLength }}</td>
     <td>{{ jobSum.convertedImageCount }}</td>
     <td>{{ jobSum.deletedFileCount }}/{{ jobSum.ignoredFileCount }}/{{ jobSum.errorCount }}</td>
   </tr>
@@ -73,7 +75,7 @@
       </div>
     </div>
   </mat-tab>
-  <mat-tab label="Reports">
+  <mat-tab label="Job reports">
     <table style="margin-left:0px">
       <tr>
         <th>Job started</th>
