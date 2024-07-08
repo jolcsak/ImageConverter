@@ -39,11 +39,17 @@ interface JobSummary {
 enum ProcessingQueueItemState {
   Compressing,
   Recompressing,
-  Deleted
+  Compressed,
+  Ignored,
+  Deleted,
+  Failed
 }
 
 interface ProcessingQueueItem {
   state: ProcessingQueueItemState,
+  inputFileSize: number,
+  outputFileSize: number,
+  quality: number,
   queueItem: QueueItem;
 }
 

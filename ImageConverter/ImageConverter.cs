@@ -1,4 +1,5 @@
 ﻿using ImageConverter.Domain;
+using ImageConverter.Domain.DbEntities;
 using ImageConverter.Domain.Dto;
 using ImageMagick;
 using Microsoft.Extensions.Logging;
@@ -33,8 +34,9 @@ namespace ImageConverter
             this.imageConverterContext = imageConverterContext; 
         }
 
-        public async Task<long?> ConvertImage(string basePath, FileInfo inputFileInfo, string[]? transformerKeys, MagickFormat outputFormat)
+        public async Task<long?> ConvertImage(ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, string[]? transformerKeys, MagickFormat outputFormat)
         {
+            string basePath = processingQueueItem.QueueItem.BaseDirectory;
             try
             {
                 string outputExtension = outputFormat.ToString();
@@ -42,6 +44,7 @@ namespace ImageConverter
                 var imageInfo = new MagickImageInfo(imagePath);
 
                 long inputFileSize = inputFileInfo.Length;
+                processingQueueItem.InputFileSize = inputFileSize;
                 var prettyInputFileSize = PrettySize.Bytes(inputFileSize);
 
                 string relativeInputFilePath = Path.GetRelativePath(basePath, inputFileInfo.FullName);
@@ -56,7 +59,8 @@ namespace ImageConverter
                             logger.LogWarning("Skipping image because of in rule '{imageFormat}'.", inRule.ImageFormat);
                             return null;
                         }
-                    }                        
+                    }
+                    processingQueueItem.Quality = image.Quality;
 
                     image.Format = outputFormat;
 
@@ -90,6 +94,7 @@ namespace ImageConverter
                             }
                             else
                             {
+                                processingQueueItem.State = ProcessingQueueItemState.Recompressing;
                                 image.Quality -= 5;
                                 logger.LogInformation(
                                     "{outputFileName}: output file size {outputFileSize} is too high. Recompressing. Q: {imageQuality}",
@@ -99,6 +104,7 @@ namespace ImageConverter
                     } while (!imageProcessed);
 
                     long outputFileSize = new FileInfo(outputFileName).Length;
+                    processingQueueItem.OutputFileSize = outputFileSize;
 
                     var prettyOutputFileSize = PrettySize.Bytes(outputFileSize);
 

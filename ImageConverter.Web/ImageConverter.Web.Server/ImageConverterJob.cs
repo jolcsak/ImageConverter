@@ -49,9 +49,9 @@ namespace ImageConverter.Web.Server
 
         private async Task DequeueAsync(QueueItem queueItem)
         {
+            ProcessingQueueItem processingQueueItem = processedQueue.AddQueueItem(queueItem);
             try
             {
-                processedQueue.AddQueueItem(queueItem);
                 string file = queueItem.FullPath;
                 FileInfo fileInfo = new FileInfo(file);
 
@@ -67,12 +67,12 @@ namespace ImageConverter.Web.Server
                     if (!IsSkippable(configuration.SkipPostfix!, fileInfo))
                     {
                         long? outputFileSize =
-                            await imageConverter!.ConvertImage(queueItem.BaseDirectory, fileInfo, configuration.Transformers, configuration.OutputFormat!.Value);
-                        imageConverterContext.OnImageConverted(queueItem, fileInfo, outputFileSize.Value);
+                            await imageConverter!.ConvertImage(processingQueueItem, fileInfo, configuration.Transformers, configuration.OutputFormat!.Value);
+                        imageConverterContext.OnImageConverted(processingQueueItem, fileInfo, outputFileSize.Value);
                     }
                     else
                     {
-                        imageConverterContext.OnImageIgnored(queueItem);
+                        imageConverterContext.OnImageIgnored(processingQueueItem);
                         logger.LogWarning($"{file}: skipped by skip postfix settings('{configuration.SkipPostfix!}').");
                     }
                 }
@@ -80,9 +80,9 @@ namespace ImageConverter.Web.Server
             catch (Exception ex)
             {
                 logger.LogError("There is an error during the image conversion: " + ex.Message);
-                imageConverterContext.OnImageConvertFailed(queueItem);
+                imageConverterContext.OnImageConvertFailed(processingQueueItem);
             }
-        }
+        }   
 
         private static bool IsSkippable(string? skipPostfix, FileInfo fileInfo)
         {

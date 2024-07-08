@@ -64,7 +64,7 @@ namespace ImageConverter.Domain.Dto
             }
         }
 
-        public void OnImageConverted(QueueItem queueItem, FileInfo inputFileInfo, long? outputFileSize)
+        public void OnImageConverted(ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, long? outputFileSize)
         {
             if (outputFileSize == null)
             {
@@ -83,31 +83,33 @@ namespace ImageConverter.Domain.Dto
                 JobSummary.ConvertedImageCount++;
 
                 inputFileInfo.Delete();
-
-                queueItem.State = (byte)QueueItemState.Processed;
-                Save(deleteQueueItem: queueItem);
+                processingQueueItem.State = ProcessingQueueItemState.Compressed;
+                processingQueueItem.QueueItem.State = (byte)QueueItemState.Processed;
+                Save(deleteQueueItem: processingQueueItem.QueueItem);
             }
         }
 
-        public void OnImageIgnored(QueueItem queueItem)
+        public void OnImageIgnored(ProcessingQueueItem processingQueueItem)
         {
             lock (lockObject)
             {
                 JobSummary.IgnoredFileCount++;
                 Sum.IgnoredFileCount++;
-                queueItem.State = (byte)QueueItemState.Ignored;
-                Save(updateQueueItem:queueItem);
+                processingQueueItem.State = ProcessingQueueItemState.Ignored;
+                processingQueueItem.QueueItem.State = (byte)QueueItemState.Ignored;
+                Save(updateQueueItem: processingQueueItem.QueueItem);
             }
         }
 
-        public void OnImageConvertFailed(QueueItem queueItem)
+        public void OnImageConvertFailed(ProcessingQueueItem processingQueueItem)
         {
             lock (lockObject)
             {
                 JobSummary.ErrorCount++;
                 Sum.ErrorCount++;
-                queueItem.State = (byte)QueueItemState.Error;
-                Save(updateQueueItem: queueItem);
+                processingQueueItem.State = ProcessingQueueItemState.Failed;
+                processingQueueItem.QueueItem.State = (byte)QueueItemState.Error;
+                Save(updateQueueItem: processingQueueItem.QueueItem);
             }
         }
 

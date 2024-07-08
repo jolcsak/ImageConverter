@@ -70,15 +70,7 @@
   <mat-tab label="Queue">
     <div class="queue">
       <div *ngFor="let processingQueueItem of processingQueueItems" class="queueItem">
-        <p style="text-align:left">{{ processingQueueItem.queueItem.fullPath }} - {{ this.getQueueState(processingQueueItem.state) }}</p>
-        <hr>
-      </div>
-    </div>
-  </mat-tab>
-  <mat-tab label="Logs">
-    <div class="log-entries">
-      <div *ngFor="let log of logMessages" class="log-entry">
-        <p style="text-align:left">{{ log.timeStamp }} - {{ log.type }} - {{ log.message }}</p>
+        <p style="text-align:left">{{ processingQueueItem.queueItem.fullPath }} - {{ this.getQueueState(processingQueueItem.state) }}, Q: {{ processingQueueItem.quality }}, I: {{ processingQueueItem.inputFileSize | filesize }}, O: {{ processingQueueItem.outputFileSize | filesize }}</p>
         <hr>
       </div>
     </div>
@@ -104,6 +96,14 @@
         <td>{{ jobSum.deletedFileCount }}/{{ jobSum.ignoredFileCount }}/{{ jobSum.errorCount }}</td>
       </tr>
     </table>
+  </mat-tab>
+  <mat-tab label="Logs">
+    <div class="log-entries">
+      <div *ngFor="let log of logMessages" class="log-entry">
+        <p style="text-align:left">{{ log.timeStamp }} - {{ log.type }} - {{ log.message }}</p>
+        <hr>
+      </div>
+    </div>
   </mat-tab>
 </mat-tab-group>
 
