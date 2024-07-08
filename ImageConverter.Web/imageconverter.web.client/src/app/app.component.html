@@ -67,6 +67,14 @@
 </table>
 
 <mat-tab-group animationDuration="0ms">
+  <mat-tab label="Queue">
+    <div class="queue">
+      <div *ngFor="let queueItem of processingQueueItems" class="queueItem">
+        <p style="text-align:left">{{ queueItem.fullPath }}</p>
+        <hr>
+      </div>
+    </div>
+  </mat-tab>
   <mat-tab label="Logs">
     <div class="log-entries">
       <div *ngFor="let log of logMessages" class="log-entry">

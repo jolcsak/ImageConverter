@@ -15,6 +15,7 @@ namespace ImageConverter.Web.Server
         private readonly ImageConverterConfiguration configuration;
         private readonly ImageConverterContext imageConverterContext;
         private readonly IQueueHandler queueHandler;
+        private readonly IProcessedQueue processedQueue;
 
         public ImageConverterJob(
             IImageConverter imageConverter, 
@@ -22,7 +23,8 @@ namespace ImageConverter.Web.Server
             ILogger<ImageConverterJob> logger,
             IConfigurationHandler configurationHandler, 
             IQueueHandler queueHandler,
-            ImageConverterContext imageConverterContext)
+            ImageConverterContext imageConverterContext,
+            IProcessedQueue processedQueue)
         {
             this.imageConverter = imageConverter;
             this.fileCleaner = fileCleaner;
@@ -30,6 +32,7 @@ namespace ImageConverter.Web.Server
             configuration = configurationHandler.GetConfiguration();
             this.queueHandler = queueHandler;
             this.imageConverterContext = imageConverterContext;
+            this.processedQueue = processedQueue;
         }
 
         public async Task Execute(IJobExecutionContext context)
@@ -48,6 +51,7 @@ namespace ImageConverter.Web.Server
         {
             try
             {
+                processedQueue.AddQueueItem(queueItem);
                 string file = queueItem.FullPath;
                 FileInfo fileInfo = new FileInfo(file);
 

@@ -23,13 +23,15 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly ImageConverterJobRegistry imageConverterJobRegistry;
         private readonly ImageConverterConfiguration configuration;
         private readonly ITaskPool taskPool;
+        private readonly IProcessedQueue processedQueue;
 
         public ImageConverterController(
             IOptions<ImageConverterConfiguration> configurationSettings, 
             ILogger<ImageConverterController> logger,
             ISchedulerFactory schedulerFactory,
             ImageConverterJobRegistry imageConverterJobRegistry,
-            ITaskPool taskPool)
+            ITaskPool taskPool,
+            IProcessedQueue processedQueue)
         {
             configuration = configurationSettings.Value;
 
@@ -39,6 +41,7 @@ namespace ImageConverter.Web.Server.Controllers
             this.logger = logger;
             this.imageConverterJobRegistry = imageConverterJobRegistry;
             this.taskPool = taskPool;
+            this.processedQueue = processedQueue;
         }
 
         [HttpGet]
@@ -127,6 +130,12 @@ namespace ImageConverter.Web.Server.Controllers
             {
                 return db.Table<JobSummary>().LastOrDefault() ?? new JobSummary();
             }
+        }
+
+        [HttpGet]
+        public IEnumerable<QueueItem> GetProcessingQueue()
+        {
+            return processedQueue.GetLastQueueItems();
         }
 
         private async Task<bool> IsImageConverterJobRunningAsync(IScheduler scheduler)

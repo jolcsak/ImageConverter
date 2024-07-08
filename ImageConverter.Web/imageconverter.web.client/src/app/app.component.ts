@@ -36,6 +36,13 @@ interface JobSummary {
   state: string;
 }
 
+interface QueueItem {
+  id: number;
+  baseDirectory: string;
+  fullPath: string;
+  state: number;
+}
+
 interface Settings {
   serverTime: Date;
   threadCount: number;
@@ -95,6 +102,7 @@ export class AppComponent implements OnInit {
 
   public isImageConverterJobRunning: boolean = false;
   public isNextFirePresent: boolean = false;
+  public processingQueueItems: QueueItem[] = [];
   public logMessages: LogMessage[] = [];
   public jobSummaries: JobSummary[] = [];
 
@@ -127,6 +135,7 @@ export class AppComponent implements OnInit {
     this.getSummaries();
     if (this.isImageConverterJobRunning) {
       this.getLogMessages();
+      this.getProcessingQueueItems();
     }
 
     this.getJobSummaries();
@@ -212,6 +221,18 @@ export class AppComponent implements OnInit {
       }
     );
   }
+
+  getProcessingQueueItems() {
+    this.http.get<QueueItem[]>('/ImageConverter/GetProcessingQueue').subscribe(
+      (result) => {
+        this.processingQueueItems = result;
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
 
   getJobSummaries() {
     this.http.get<JobSummary[]>('/ImageConverter/GetJobSummaries').subscribe(
