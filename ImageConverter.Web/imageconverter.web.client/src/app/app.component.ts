@@ -36,6 +36,17 @@ interface JobSummary {
   state: string;
 }
 
+enum ProcessingQueueItemState {
+  Compressing,
+  Recompressing,
+  Deleted
+}
+
+interface ProcessingQueueItem {
+  state: ProcessingQueueItemState,
+  queueItem: QueueItem;
+}
+
 interface QueueItem {
   id: number;
   baseDirectory: string;
@@ -102,7 +113,7 @@ export class AppComponent implements OnInit {
 
   public isImageConverterJobRunning: boolean = false;
   public isNextFirePresent: boolean = false;
-  public processingQueueItems: QueueItem[] = [];
+  public processingQueueItems: ProcessingQueueItem[] = [];
   public logMessages: LogMessage[] = [];
   public jobSummaries: JobSummary[] = [];
 
@@ -161,6 +172,10 @@ export class AppComponent implements OnInit {
         console.error(error);
       }
     );
+  }
+
+  getQueueState(state: ProcessingQueueItemState) : string | undefined {
+    return ProcessingQueueItemState[state];
   }
 
   getSettings() {
@@ -223,7 +238,7 @@ export class AppComponent implements OnInit {
   }
 
   getProcessingQueueItems() {
-    this.http.get<QueueItem[]>('/ImageConverter/GetProcessingQueue').subscribe(
+    this.http.get<ProcessingQueueItem[]>('/ImageConverter/GetProcessingQueue').subscribe(
       (result) => {
         this.processingQueueItems = result;
       },

@@ -11,7 +11,7 @@ namespace ImageConverter.Web.Server
         {
             app.Services.AddSingleton<IQueueHandler, QueueHandler.QueueHandler>();
             app.Services.AddSingleton<ImageConverterJobRegistry>();
-            app.Services.AddSingleton<IProcessedQueue, ProcessedQueue>();
+            app.Services.AddSingleton<IProcessingQueue, ProcessingQueue>();
 
             ImageConverterStartup.Configure(app);
         }

@@ -15,7 +15,7 @@ namespace ImageConverter.Web.Server
         private readonly ImageConverterConfiguration configuration;
         private readonly ImageConverterContext imageConverterContext;
         private readonly IQueueHandler queueHandler;
-        private readonly IProcessedQueue processedQueue;
+        private readonly IProcessingQueue processedQueue;
 
         public ImageConverterJob(
             IImageConverter imageConverter, 
@@ -24,7 +24,7 @@ namespace ImageConverter.Web.Server
             IConfigurationHandler configurationHandler, 
             IQueueHandler queueHandler,
             ImageConverterContext imageConverterContext,
-            IProcessedQueue processedQueue)
+            IProcessingQueue processedQueue)
         {
             this.imageConverter = imageConverter;
             this.fileCleaner = fileCleaner;

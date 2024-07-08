@@ -23,7 +23,7 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly ImageConverterJobRegistry imageConverterJobRegistry;
         private readonly ImageConverterConfiguration configuration;
         private readonly ITaskPool taskPool;
-        private readonly IProcessedQueue processedQueue;
+        private readonly IProcessingQueue processedQueue;
 
         public ImageConverterController(
             IOptions<ImageConverterConfiguration> configurationSettings, 
@@ -31,7 +31,7 @@ namespace ImageConverter.Web.Server.Controllers
             ISchedulerFactory schedulerFactory,
             ImageConverterJobRegistry imageConverterJobRegistry,
             ITaskPool taskPool,
-            IProcessedQueue processedQueue)
+            IProcessingQueue processedQueue)
         {
             configuration = configurationSettings.Value;
 
@@ -133,7 +133,7 @@ namespace ImageConverter.Web.Server.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<QueueItem> GetProcessingQueue()
+        public IEnumerable<ProcessingQueueItem> GetProcessingQueue()
         {
             return processedQueue.GetLastQueueItems();
         }
