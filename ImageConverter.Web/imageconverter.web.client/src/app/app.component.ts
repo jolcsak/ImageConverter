@@ -63,6 +63,7 @@ interface Settings {
   serverTime: Date;
   threadCount: number;
   queueLength: number;
+  memoryUsage: number;
 }
 
 interface LogMessage {
@@ -87,7 +88,8 @@ export class AppComponent implements OnInit {
   public settings: Settings = {
     serverTime: new Date(),
     threadCount: 0,
-    queueLength: 0
+    queueLength: 0,
+    memoryUsage: 0,
   }
 
   public sum: ImageConverterSummary = {
@@ -150,7 +152,7 @@ export class AppComponent implements OnInit {
   startPolling(): void {
     this.getLogMessages();
 
-    const logPolling = interval(1000).subscribe(() => {
+    const logPolling = interval(300).subscribe(() => {
       this.refreshContent();
     });
 
@@ -188,6 +190,17 @@ export class AppComponent implements OnInit {
     this.http.get<string>('/ImageConverter/StopJob').subscribe(
       (result) => {
        
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
+  clearqueue() {
+    this.http.get<string>('/ImageConverter/ClearQueue').subscribe(
+      (result) => {
+        this.processingQueueItems = [];
       },
       (error) => {
         console.error(error);

@@ -24,6 +24,11 @@ namespace ImageConverter
 
         public int QueueLength => tasks.Count;
 
+        public void ClearQueue()
+        {
+            tasks.Clear(); 
+        }
+
         public async Task ExecuteTasksAsync(CancellationToken cancellationToken)
         {
             var tasks = new List<Task>();

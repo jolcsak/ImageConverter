@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Quartz;
 using SQLite;
+using System.Diagnostics;
 
 namespace ImageConverter.Web.Server.Controllers
 {
@@ -12,7 +13,7 @@ namespace ImageConverter.Web.Server.Controllers
     [Route("[controller]/[action]")]
     public class ImageConverterController : ControllerBase
     {
-        private const int LogCount = 15;
+        private const int LogCount = 20;
         private const int JobSummaryCount = 20;
 
         private readonly string storageLogPath;
@@ -25,13 +26,16 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly ITaskPool taskPool;
         private readonly IProcessingQueue processedQueue;
 
+        private readonly IStorageHandler storageHandler;
+
         public ImageConverterController(
             IOptions<ImageConverterConfiguration> configurationSettings, 
             ILogger<ImageConverterController> logger,
             ISchedulerFactory schedulerFactory,
             ImageConverterJobRegistry imageConverterJobRegistry,
             ITaskPool taskPool,
-            IProcessingQueue processedQueue)
+            IProcessingQueue processedQueue,
+            IStorageHandler storageHandler)
         {
             configuration = configurationSettings.Value;
 
@@ -42,6 +46,7 @@ namespace ImageConverter.Web.Server.Controllers
             this.imageConverterJobRegistry = imageConverterJobRegistry;
             this.taskPool = taskPool;
             this.processedQueue = processedQueue;
+            this.storageHandler = storageHandler;   
         }
 
         [HttpGet]
@@ -78,6 +83,22 @@ namespace ImageConverter.Web.Server.Controllers
         }
 
         [HttpGet]
+        public async Task<string> ClearQueue()
+        {
+            var scheduler = await schedulerFactory.GetScheduler();
+
+            if (await IsImageConverterJobRunningAsync(scheduler))
+            {
+                await scheduler.Interrupt(imageConverterJobRegistry.JobKey!);
+            }
+
+            taskPool.ClearQueue();
+            storageHandler.ClearQueue();
+
+            return string.Empty;
+        }
+
+        [HttpGet]
         public SettingsDto GetSettings()
         {
             return new SettingsDto
@@ -86,7 +107,8 @@ namespace ImageConverter.Web.Server.Controllers
                 ThreadCount = 
                     configuration.ThreadNumber.HasValue? 
                         configuration.ThreadNumber.Value : Environment.ProcessorCount,
-                QueueLength = taskPool.QueueLength
+                QueueLength = taskPool.QueueLength,
+                MemoryUsage = GetMemoryUsage()
             };
         }
 
@@ -144,6 +166,11 @@ namespace ImageConverter.Web.Server.Controllers
 
             return imageConverterJobRegistry.JobKey != null && 
                    executingJobs.Any(ej => ej.JobDetail.Key.Equals(imageConverterJobRegistry.JobKey));
+        }
+
+        private static long GetMemoryUsage()
+        {
+            return Process.GetCurrentProcess().WorkingSet64;
         }
     }
 }

@@ -1,15 +1,19 @@
 <h1 id="tableLabel">Image Converter Client v0.2</h1>
 
-<p style="text-align:left">Server Time: {{ settings.serverTime | date:'medium' }} - Thread count: {{ settings.threadCount }}</p>
+<p style="text-align:left">Server Time: {{ settings.serverTime | date:'medium' }} - Thread count: {{ settings.threadCount }} - Memory usage: {{ settings.memoryUsage | filesize }}</p>
 
 <p *ngIf="!sum"><em>Loading... </em></p>
 
-<button class="start-button" [disabled]="isImageConverterJobRunning" (click)="start()">
-  <i class="fa fa-start"></i> Start
+<button class="start-button fa fa-start" [disabled]="isImageConverterJobRunning" (click)="start()">
+  Start
 </button>
 
-<button class="stop-button" [disabled]="!isImageConverterJobRunning" (click)="stop()">
-  <i class="fa fa-stop"></i> Stop
+<button class="stop-button fa fa-stop" [disabled]="!isImageConverterJobRunning" (click)="stop()">
+  Stop
+</button>
+
+<button class="clearqueue-button fa fa-cq" (click)="clearqueue()">
+  Clear Queue
 </button>
 
 <p class="header">All jobs</p>

@@ -87,3 +87,33 @@ table {
   color: #9e9e9e; /* Gray text for disabled state */
   cursor: not-allowed; /* Not-allowed cursor */
 }
+
+
+.clearqueue-button {
+  background-color: #ffa31a; /* Orange background */
+  border: none;
+  color: white; /* White text */
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 12px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+.clearqueue-button:hover {
+  background-color: #cc7a00; /* Darker orange on hover */
+}
+
+.clearqueue-button .fa-cq {
+  margin-right: 8px; /* Space between icon and text */
+}
+
+.clearqueue-button:disabled {
+  background-color: #e0e0e0; /* Gray background for disabled state */
+  color: #9e9e9e; /* Gray text for disabled state */
+  cursor: not-allowed; /* Not-allowed cursor */
+}

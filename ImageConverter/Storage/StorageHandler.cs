@@ -102,5 +102,13 @@ namespace ImageConverter.Storage
                 }
             }
         }
+
+        public void ClearQueue()
+        {
+            using (var db = new SQLiteConnection(storageDbPath))
+            {
+                db.Table<QueueItem>().Delete();
+            }
+        }
     }
 }
