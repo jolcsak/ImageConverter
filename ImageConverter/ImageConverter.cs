@@ -1,5 +1,4 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.DbEntities;
 using ImageConverter.Domain.Dto;
 using ImageMagick;
 using Microsoft.Extensions.Logging;

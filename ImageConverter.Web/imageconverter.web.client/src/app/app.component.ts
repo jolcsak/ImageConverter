@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { Component, OnInit } from '@angular/core';
-import { Data } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 
 interface ImageConverterSummary {
@@ -79,6 +78,12 @@ interface LogMessage {
 })
 export class AppComponent implements OnInit {
 
+  private static readonly queueTabIndex = 0;
+  private static readonly jobReportTabIndex = 1;
+  private static readonly logTabIndex = 2;
+
+  private selectedTabIndex: number = 0;
+
   public settings: Settings = {
     serverTime: new Date(),
     threadCount: 0,
@@ -136,6 +141,12 @@ export class AppComponent implements OnInit {
     this.subscription.unsubscribe();
   }
 
+  tabChanged (tabChangeEvent: MatTabChangeEvent): void  {
+    console.log('tabChangeEvent => ', tabChangeEvent);
+    console.log('index => ', tabChangeEvent.index);
+    this.selectedTabIndex = tabChangeEvent.index;
+  }
+
   startPolling(): void {
     this.getLogMessages();
 
@@ -151,8 +162,12 @@ export class AppComponent implements OnInit {
     this.getSettings();
     this.getSummaries();
     if (this.isImageConverterJobRunning) {
-      this.getLogMessages();
-      this.getProcessingQueueItems();
+      if (this.selectedTabIndex == AppComponent.logTabIndex) {
+        this.getLogMessages();
+      }
+      else if (this.selectedTabIndex == AppComponent.queueTabIndex) {
+        this.getProcessingQueueItems();
+      }
     }
 
     this.getJobSummaries();

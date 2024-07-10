@@ -66,7 +66,7 @@
   </tr>
 </table>
 
-<mat-tab-group animationDuration="0ms">
+<mat-tab-group animationDuration="0ms" (selectedTabChange)="tabChanged($event)">
   <mat-tab label="Queue">
     <div class="queue">
       <div *ngFor="let processingQueueItem of processingQueueItems" class="queueItem">
