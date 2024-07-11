@@ -86,18 +86,14 @@ namespace ImageConverter.QueueHandler
                 using (var db = storageHandler.GetConnection())
                 {
                     var nextItem = db.Table<QueueItem>().FirstOrDefault(qi => qi.State == (byte)QueueItemState.Queued);
-                    if (nextItem != null)
-                    {
-                        nextItem.State = (byte)QueueItemState.Processing;
-                        db.Update(nextItem);
-                    }
-                    else
-                    {
-                        queueItem = default;
-                        return false;
-                    }
                     queueItem = nextItem;
-                    return true;
+                    if (queueItem != null)
+                    {
+                        queueItem.State = (byte)QueueItemState.Processing;
+                        db.Update(queueItem);
+                        return true;
+                    }
+                    return false;
                 }
             }
         }
