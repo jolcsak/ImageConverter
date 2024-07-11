@@ -4,7 +4,9 @@ namespace ImageConverter.Domain.QueueHandler
 {
     public interface IQueueHandler
     {
-        void Enqueue();
-        Task DequeueAsync(Func<QueueItem, Task> task, CancellationToken cancellationToken);
+        int Length { get; }
+        void Enqueue(CancellationToken cancellationToken);
+        bool TryDequeue(out QueueItem? queueItem);
+        void ClearQueue();
     }
 }

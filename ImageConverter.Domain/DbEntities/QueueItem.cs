@@ -6,9 +6,10 @@ namespace ImageConverter.Domain.DbEntities
     public enum QueueItemState
     {
         Queued = 0,
-        Processed = 1,
-        Ignored = 2,
-        Error = 4
+        Processing = 1,
+        Processed = 2,
+        Ignored = 3,
+        Error = 4,
     }
 
 

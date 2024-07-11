@@ -19,13 +19,11 @@
 <p class="header">All jobs</p>
 <table *ngIf="sum">
   <tr>
-    <th>State</th>
     <th>Last Started</th>
     <th>Last Finished</th>
     <th>Next Start</th>
   </tr>
   <tr>
-    <td>{{ sum.state }}</td>
     <td>{{ sum.lastStartDate | date:'medium' }}</td>
     <td>{{ sum.lastFinishDate | date:'medium' }}</td>
     <td *ngIf="isNextFirePresent">{{ sum.nextFireDate | date:'medium' }}</td>
@@ -54,6 +52,7 @@
 <table *ngIf="jobSum">
   <tr>
     <th>State</th>
+    <th>Execution state</th>
     <th>Processed</th>
     <th>Saved</th>
     <th>Queue length</th>
@@ -62,6 +61,7 @@
   </tr>
   <tr>
     <td>{{ jobSum.state }}</td>
+    <td>{{ this.getExecutionState(settings.executionState) }}</td>
     <td>{{ jobSum.inputBytes | filesize }}</td>
     <td>{{ jobSum.inputBytes - jobSum.outputBytes | filesize }}</td>
     <td>{{ settings.queueLength }}</td>

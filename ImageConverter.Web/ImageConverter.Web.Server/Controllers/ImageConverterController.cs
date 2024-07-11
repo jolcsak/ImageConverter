@@ -25,8 +25,7 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly ImageConverterConfiguration configuration;
         private readonly ITaskPool taskPool;
         private readonly IProcessingQueue processedQueue;
-
-        private readonly IStorageHandler storageHandler;
+        private readonly IExecutionContext executionContext;
 
         public ImageConverterController(
             IOptions<ImageConverterConfiguration> configurationSettings, 
@@ -35,7 +34,7 @@ namespace ImageConverter.Web.Server.Controllers
             ImageConverterJobRegistry imageConverterJobRegistry,
             ITaskPool taskPool,
             IProcessingQueue processedQueue,
-            IStorageHandler storageHandler)
+            IExecutionContext executionContext)
         {
             configuration = configurationSettings.Value;
 
@@ -46,7 +45,7 @@ namespace ImageConverter.Web.Server.Controllers
             this.imageConverterJobRegistry = imageConverterJobRegistry;
             this.taskPool = taskPool;
             this.processedQueue = processedQueue;
-            this.storageHandler = storageHandler;   
+            this.executionContext = executionContext;
         }
 
         [HttpGet]
@@ -93,7 +92,6 @@ namespace ImageConverter.Web.Server.Controllers
             }
 
             taskPool.ClearQueue();
-            storageHandler.ClearQueue();
 
             return string.Empty;
         }
@@ -108,7 +106,8 @@ namespace ImageConverter.Web.Server.Controllers
                     configuration.ThreadNumber.HasValue? 
                         configuration.ThreadNumber.Value : Environment.ProcessorCount,
                 QueueLength = taskPool.QueueLength,
-                MemoryUsage = GetMemoryUsage()
+                MemoryUsage = GetMemoryUsage(),
+                ExecutionState = executionContext.ExecutionState
             };
         }
 

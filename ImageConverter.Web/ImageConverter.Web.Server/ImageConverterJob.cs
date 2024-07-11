@@ -15,7 +15,9 @@ namespace ImageConverter.Web.Server
         private readonly ImageConverterConfiguration configuration;
         private readonly ImageConverterContext imageConverterContext;
         private readonly IQueueHandler queueHandler;
-        private readonly IProcessingQueue processedQueue;
+        private readonly IProcessingQueue processingQueue;
+        private readonly ITaskPool taskPool;
+        private readonly IExecutionContext executionContext;
 
         public ImageConverterJob(
             IImageConverter imageConverter, 
@@ -24,7 +26,9 @@ namespace ImageConverter.Web.Server
             IConfigurationHandler configurationHandler, 
             IQueueHandler queueHandler,
             ImageConverterContext imageConverterContext,
-            IProcessingQueue processedQueue)
+            IProcessingQueue processingQueue,
+            ITaskPool taskPool,
+            IExecutionContext executionContext)
         {
             this.imageConverter = imageConverter;
             this.fileCleaner = fileCleaner;
@@ -32,7 +36,9 @@ namespace ImageConverter.Web.Server
             configuration = configurationHandler.GetConfiguration();
             this.queueHandler = queueHandler;
             this.imageConverterContext = imageConverterContext;
-            this.processedQueue = processedQueue;
+            this.processingQueue = processingQueue;
+            this.taskPool = taskPool;
+            this.executionContext = executionContext;
         }
 
         public async Task Execute(IJobExecutionContext context)
@@ -41,15 +47,22 @@ namespace ImageConverter.Web.Server
 
             imageConverterContext.OnJobStarted();
 
-            queueHandler.Enqueue();
-            await queueHandler.DequeueAsync(DequeueAsync, context.CancellationToken);
+            executionContext.ExecutionState = ExecutionState.Collecting;
+            queueHandler.Enqueue(context.CancellationToken);
+
+            if (!context.CancellationToken.IsCancellationRequested)
+            {
+                executionContext.ExecutionState = ExecutionState.Compressing;
+                await taskPool.ExecuteTasksAsync(DequeueAsync, context.CancellationToken);
+            }
 
             imageConverterContext.OnJobFinished(context);
+            executionContext.ExecutionState = ExecutionState.Done;
         }
 
         private async Task DequeueAsync(QueueItem queueItem)
         {
-            ProcessingQueueItem processingQueueItem = processedQueue.AddQueueItem(queueItem);
+            ProcessingQueueItem processingQueueItem = processingQueue.AddQueueItem(queueItem);
             try
             {
                 string file = queueItem.FullPath;

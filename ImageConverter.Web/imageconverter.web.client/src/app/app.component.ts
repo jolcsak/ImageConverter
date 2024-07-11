@@ -59,11 +59,18 @@ interface QueueItem {
   state: number;
 }
 
+enum ExecutionState {
+  Collecting,
+  Compressing,
+  Done
+}
+
 interface Settings {
   serverTime: Date;
   threadCount: number;
   queueLength: number;
   memoryUsage: number;
+  executionState: ExecutionState
 }
 
 interface LogMessage {
@@ -90,6 +97,7 @@ export class AppComponent implements OnInit {
     threadCount: 0,
     queueLength: 0,
     memoryUsage: 0,
+    executionState: ExecutionState.Done
   }
 
   public sum: ImageConverterSummary = {
@@ -210,6 +218,10 @@ export class AppComponent implements OnInit {
 
   getQueueState(state: ProcessingQueueItemState) : string | undefined {
     return ProcessingQueueItemState[state];
+  }
+
+  getExecutionState(state: ExecutionState): string | undefined {
+    return ExecutionState[state];
   }
 
   getSettings() {

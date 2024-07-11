@@ -9,6 +9,7 @@ namespace ImageConverter.Web.Server
     {
         public static void Configure(IHostApplicationBuilder app)
         {
+            app.Services.AddSingleton<IExecutionContext, ExecutionContext>();
             app.Services.AddSingleton<IQueueHandler, QueueHandler.QueueHandler>();
             app.Services.AddSingleton<ImageConverterJobRegistry>();
             app.Services.AddSingleton<IProcessingQueue, ProcessingQueue>();

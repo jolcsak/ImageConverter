@@ -107,7 +107,7 @@ namespace ImageConverter.Storage
         {
             using (var db = new SQLiteConnection(storageDbPath))
             {
-                db.Table<QueueItem>().Delete();
+                db.Table<QueueItem>().Delete(qi => true);
             }
         }
     }

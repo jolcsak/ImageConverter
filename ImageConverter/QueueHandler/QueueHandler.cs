@@ -14,21 +14,31 @@ namespace ImageConverter.QueueHandler
         private readonly ImageConverterConfiguration configuration;
         private readonly IStorageHandler storageHandler;
         private readonly ILogger<QueueHandler> logger;
-        private readonly ITaskPool taskPool;
+
+        private object _lock = new();
 
         public QueueHandler(
             IConfigurationHandler configurationHandler,
             IStorageHandler storageHandler, 
-            ILogger<QueueHandler> logger,
-            ITaskPool taskPool)
+            ILogger<QueueHandler> logger)
         {
             configuration = configurationHandler.GetConfiguration();
             this.storageHandler = storageHandler;
             this.logger = logger;
-            this.taskPool = taskPool;
         }
 
-        public void Enqueue()
+        public int Length
+        {
+            get
+            {
+                using (var db = storageHandler.GetConnection())
+                {
+                    return db.Table<QueueItem>().Count(qi => qi.State == (byte)QueueItemState.Queued);
+                }
+            }
+        }
+
+        public void Enqueue(CancellationToken cancellationToken)
         {
             logger.LogInformation("Processing queue");
 
@@ -41,15 +51,20 @@ namespace ImageConverter.QueueHandler
                     string[] files = Directory.GetFiles(imageDirectory!, "*", SearchOption.AllDirectories);
                     foreach (string filePath in files)
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
                         if (IsProcessable(filePath) && IsNotInQueue(db, filePath))
                         {
                             QueueItem queue = new QueueItem { 
                                 BaseDirectory = imageDirectory, 
                                 FullPath = filePath, 
-                                State = (byte)QueueItemState.Queued 
+                                State = (byte)QueueItemState.Queued
                             };
                             db.Insert(queue);
-                            logger.LogInformation($"New item added to the queue: {queue.FullPath}");
+                            logger.LogInformation("New item added to the queue: {fullPath}", queue.FullPath);
                             newItemCount++;
 
                             if (newItemCount % BatchSize == 0)
@@ -64,17 +79,32 @@ namespace ImageConverter.QueueHandler
             logger.LogInformation("Processing queue done");
         }
 
-        public async Task DequeueAsync(Func<QueueItem, Task> task, CancellationToken cancellationToken)
+        public bool TryDequeue(out QueueItem? queueItem)
         {
-            using (var db = storageHandler.GetConnection())
+            lock (_lock)
             {
-                foreach (QueueItem queueItem in db.Table<QueueItem>().Where(q => q.State == (byte)QueueItemState.Queued))
+                using (var db = storageHandler.GetConnection())
                 {
-                    taskPool.EnqueueTask(() => task(queueItem));
+                    var nextItem = db.Table<QueueItem>().FirstOrDefault(qi => qi.State == (byte)QueueItemState.Queued);
+                    if (nextItem != null)
+                    {
+                        nextItem.State = (byte)QueueItemState.Processing;
+                        db.Update(nextItem);
+                    }
+                    else
+                    {
+                        queueItem = default;
+                        return false;
+                    }
+                    queueItem = nextItem;
+                    return true;
                 }
             }
+        }
 
-            await taskPool.ExecuteTasksAsync(cancellationToken);
+        public void ClearQueue()
+        {
+            storageHandler.ClearQueue();
         }
 
         private bool IsProcessable(string filePath)

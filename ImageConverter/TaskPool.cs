@@ -1,35 +1,30 @@
 ﻿using ImageConverter.Domain;
-using System.Collections.Concurrent;
+using ImageConverter.Domain.DbEntities;
+using ImageConverter.Domain.QueueHandler;
 
 namespace ImageConverter
 {
     public class TaskPool : ITaskPool
     {
-        private readonly int maxDegreeOfParallelism;
-        private readonly SemaphoreSlim _semaphore;
-        private readonly ConcurrentQueue<Func<Task>> tasks;
+        private readonly IQueueHandler queueHandler;
 
-        public TaskPool(IConfigurationHandler configurationHandler)
+        private readonly int maxDegreeOfParallelism;
+
+        public TaskPool(IConfigurationHandler configurationHandler, IQueueHandler queueHandler)
         {
+            this.queueHandler = queueHandler;
             var configuration = configurationHandler.GetConfiguration();
             maxDegreeOfParallelism = configuration.ThreadNumber!.Value;
-            _semaphore = new SemaphoreSlim(maxDegreeOfParallelism, maxDegreeOfParallelism);
-            tasks = new ConcurrentQueue<Func<Task>>();
         }
 
-        public void EnqueueTask(Func<Task> task)
-        {
-            tasks.Enqueue(task);
-        }
-
-        public int QueueLength => tasks.Count;
+        public int QueueLength => queueHandler.Length;
 
         public void ClearQueue()
         {
-            tasks.Clear(); 
+            queueHandler.ClearQueue();
         }
 
-        public async Task ExecuteTasksAsync(CancellationToken cancellationToken)
+        public async Task ExecuteTasksAsync(Func<QueueItem, Task> task, CancellationToken cancellationToken)
         {
             var tasks = new List<Task>();
 
@@ -37,17 +32,9 @@ namespace ImageConverter
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    while (!cancellationToken.IsCancellationRequested && this.tasks.TryDequeue(out var task))
+                    while (!cancellationToken.IsCancellationRequested && queueHandler.TryDequeue(out var queueItem))
                     {
-                        await _semaphore.WaitAsync();
-                        try
-                        {
-                            await task();
-                        }
-                        finally
-                        {
-                            _semaphore.Release();
-                        }
+                        await task(queueItem!);
                     }
                 }, cancellationToken));
             }
