@@ -13,18 +13,21 @@ namespace ImageConverter.QueueHandler
 
         private readonly ImageConverterConfiguration configuration;
         private readonly IStorageHandler storageHandler;
+        private readonly IProcessingQueue processingQueue;
         private readonly ILogger<QueueHandler> logger;
 
         private object _lock = new();
 
         public QueueHandler(
             IConfigurationHandler configurationHandler,
-            IStorageHandler storageHandler, 
+            IStorageHandler storageHandler,
+            IProcessingQueue processingQueue,
             ILogger<QueueHandler> logger)
         {
             configuration = configurationHandler.GetConfiguration();
             this.storageHandler = storageHandler;
             this.logger = logger;
+            this.processingQueue = processingQueue;
         }
 
         public int Length
@@ -51,6 +54,10 @@ namespace ImageConverter.QueueHandler
                     string[] files = Directory.GetFiles(imageDirectory!, "*", SearchOption.AllDirectories);
                     foreach (string filePath in files)
                     {
+
+                        FileInfo fileInfo = new FileInfo(filePath);
+                        processingQueue.AddProcessingPath(fileInfo.DirectoryName);
+
                         if (cancellationToken.IsCancellationRequested)
                         {
                             return;

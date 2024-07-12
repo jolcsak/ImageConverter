@@ -24,7 +24,7 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly ImageConverterJobRegistry imageConverterJobRegistry;
         private readonly ImageConverterConfiguration configuration;
         private readonly ITaskPool taskPool;
-        private readonly IProcessingQueue processedQueue;
+        private readonly IProcessingQueue processingQueue;
         private readonly IExecutionContext executionContext;
 
         public ImageConverterController(
@@ -33,7 +33,7 @@ namespace ImageConverter.Web.Server.Controllers
             ISchedulerFactory schedulerFactory,
             ImageConverterJobRegistry imageConverterJobRegistry,
             ITaskPool taskPool,
-            IProcessingQueue processedQueue,
+            IProcessingQueue processingQueue,
             IExecutionContext executionContext)
         {
             configuration = configurationSettings.Value;
@@ -44,7 +44,7 @@ namespace ImageConverter.Web.Server.Controllers
             this.logger = logger;
             this.imageConverterJobRegistry = imageConverterJobRegistry;
             this.taskPool = taskPool;
-            this.processedQueue = processedQueue;
+            this.processingQueue = processingQueue;
             this.executionContext = executionContext;
         }
 
@@ -92,6 +92,7 @@ namespace ImageConverter.Web.Server.Controllers
             }
 
             taskPool.ClearQueue();
+            processingQueue.ClearQueue();
 
             return string.Empty;
         }
@@ -106,7 +107,7 @@ namespace ImageConverter.Web.Server.Controllers
                     configuration.ThreadNumber.HasValue? 
                         configuration.ThreadNumber.Value : Environment.ProcessorCount,
                 QueueLength = taskPool.QueueLength,
-                MemoryUsage = GetMemoryUsage(),
+                MemoryUsage = Process.GetCurrentProcess().WorkingSet64,
                 ExecutionState = executionContext.ExecutionState
             };
         }
@@ -156,7 +157,13 @@ namespace ImageConverter.Web.Server.Controllers
         [HttpGet]
         public IEnumerable<ProcessingQueueItem> GetProcessingQueue()
         {
-            return processedQueue.GetLastQueueItems();
+            return processingQueue.GetLastQueueItems();
+        }
+
+        [HttpGet]
+        public IEnumerable<string> GetProcessingPaths()
+        {
+            return processingQueue.GetLastProcessingPaths();
         }
 
         private async Task<bool> IsImageConverterJobRunningAsync(IScheduler scheduler)
@@ -165,11 +172,6 @@ namespace ImageConverter.Web.Server.Controllers
 
             return imageConverterJobRegistry.JobKey != null && 
                    executingJobs.Any(ej => ej.JobDetail.Key.Equals(imageConverterJobRegistry.JobKey));
-        }
-
-        private static long GetMemoryUsage()
-        {
-            return Process.GetCurrentProcess().WorkingSet64;
         }
     }
 }

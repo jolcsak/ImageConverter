@@ -137,6 +137,7 @@ export class AppComponent implements OnInit {
   public processingQueueItems: ProcessingQueueItem[] = [];
   public logMessages: LogMessage[] = [];
   public jobSummaries: JobSummary[] = [];
+  public processingPaths: string[] = [];
 
   private subscription: Subscription = new Subscription();
   
@@ -160,7 +161,7 @@ export class AppComponent implements OnInit {
   startPolling(): void {
     this.getLogMessages();
 
-    const logPolling = interval(300).subscribe(() => {
+    const logPolling = interval(400).subscribe(() => {
       this.refreshContent();
     });
 
@@ -176,7 +177,12 @@ export class AppComponent implements OnInit {
         this.getLogMessages();
       }
       else if (this.selectedTabIndex == AppComponent.queueTabIndex) {
-        this.getProcessingQueueItems();
+        if (this.isInCompressingState()) {
+          this.getProcessingQueueItems();
+        }
+        else if (this.isInCollectingState()) {
+          this.getProcessingPaths();
+        }
       }
     }
 
@@ -222,6 +228,14 @@ export class AppComponent implements OnInit {
 
   getExecutionState(state: ExecutionState): string | undefined {
     return ExecutionState[state];
+  }
+
+  isInCollectingState(): boolean {
+    return this.settings.executionState == ExecutionState.Collecting;
+  }
+
+  isInCompressingState(): boolean {
+    return this.settings.executionState == ExecutionState.Compressing;
   }
 
   getSettings() {
@@ -276,6 +290,17 @@ export class AppComponent implements OnInit {
     this.http.get<LogMessage[]>('/ImageConverter/GetLogs').subscribe(
       (result) => {
         this.logMessages = result;
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
+  getProcessingPaths() {
+    this.http.get<string[]>('/ImageConverter/GetProcessingPaths').subscribe(
+      (result) => {
+        this.processingPaths = result;
       },
       (error) => {
         console.error(error);

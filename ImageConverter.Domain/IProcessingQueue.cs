@@ -5,8 +5,11 @@ namespace ImageConverter.Domain
 {
     public interface IProcessingQueue
     {
+        void AddProcessingPath(string? processingPath);
         ProcessingQueueItem AddQueueItem(QueueItem queueItem);
-        void Clear();
+        ICollection<string> GetLastProcessingPaths();
         ICollection<ProcessingQueueItem> GetLastQueueItems();
+
+        void ClearQueue();
     }
 }
