@@ -1,5 +1,6 @@
 ﻿using ImageConverter.Domain;
 using ImageConverter.Domain.Dto;
+using ImageConverter.Domain.Queue;
 using Quartz;
 
 namespace ImageConverter.Web.Server
@@ -10,22 +11,22 @@ namespace ImageConverter.Web.Server
         private readonly ISchedulerFactory schedulerFactory;
         private readonly ILogger<ApplicationService> logger;
         private readonly IConfigurationHandler configurationHandler;
-        private readonly ImageConverterJobRegistry imageConverterJobRegistry;
-        private readonly ImageConverterContext imageConverterContext;
+        private readonly IExecutionContext executionContext;
+        private readonly IImageConverterJobHandler imageConverterContext;
 
         public ApplicationService(
             IHostApplicationLifetime appLifetime,
             ISchedulerFactory schedulerFactory,
             IConfigurationHandler configurationHandler,
-            ImageConverterContext imageConverterContext,
+            IImageConverterJobHandler imageConverterContext,
             ILogger<ApplicationService> logger,
-            ImageConverterJobRegistry imageConverterJobRegistry)
+            IExecutionContext executionContext)
         {
             this.appLifetime = appLifetime;
             this.schedulerFactory = schedulerFactory;
             this.logger = logger;
             this.configurationHandler = configurationHandler;          
-            this.imageConverterJobRegistry = imageConverterJobRegistry;
+            this.executionContext = executionContext;
             this.imageConverterContext = imageConverterContext;
         }
 
@@ -43,8 +44,8 @@ namespace ImageConverter.Web.Server
                 IJobDetail job = JobBuilder.Create<ImageConverterJob>().WithIdentity(jobKey).Build();
                 ITrigger trigger = TriggerBuilder.Create().WithCronSchedule(configuration.Starts!).Build();
 
-                imageConverterJobRegistry.JobKey = jobKey;
-                imageConverterJobRegistry.Trigger = trigger;
+                executionContext.JobKey = jobKey;
+                executionContext.Trigger = trigger;
 
                 var scheduler = await schedulerFactory.GetScheduler();
 

@@ -1,6 +1,6 @@
 ﻿using ImageMagick;
 
-namespace ImageConverter.Domain
+namespace ImageConverter.Domain.ImageConverter
 {
     public interface IImageTransformer
     {

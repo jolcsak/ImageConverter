@@ -1,5 +1,5 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.DbEntities;
+using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Dto;
 using Microsoft.Extensions.Options;
 using SQLite;

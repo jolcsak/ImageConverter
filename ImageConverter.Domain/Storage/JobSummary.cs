@@ -1,7 +1,6 @@
 ﻿using SQLite;
 
-
-namespace ImageConverter.Domain.DbEntities
+namespace ImageConverter.Domain.Storage
 {
     public class JobSummary
     {

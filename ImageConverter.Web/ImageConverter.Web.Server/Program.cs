@@ -21,7 +21,7 @@ var configuration = builder.Configuration.Get<ImageConverterConfiguration>();
 string logDbPath = Path.Combine(configuration?.StoragePath ?? string.Empty, Constants.LogsDb);
 
 var logger = new LoggerConfiguration()
-.MinimumLevel.Debug()
+.MinimumLevel.Information()
 .WriteTo.Console(theme: AnsiConsoleTheme.None)
 .WriteTo.SQLite(sqliteDbPath: logDbPath, batchSize: 1, retentionPeriod: new TimeSpan(7, 0, 0, 0))
 .CreateLogger();

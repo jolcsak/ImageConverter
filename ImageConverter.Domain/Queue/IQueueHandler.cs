@@ -1,6 +1,6 @@
-﻿using ImageConverter.Domain.DbEntities;
+﻿using ImageConverter.Domain.Storage;
 
-namespace ImageConverter.Domain.QueueHandler
+namespace ImageConverter.Domain.Queue
 {
     public interface IQueueHandler
     {

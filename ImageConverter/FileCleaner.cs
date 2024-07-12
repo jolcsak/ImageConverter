@@ -1,5 +1,5 @@
-﻿using ImageConverter.Domain;
-using ImageConverter.Domain.Dto;
+﻿using ImageConverter.Domain.Dto;
+using ImageConverter.Domain.ImageConverter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

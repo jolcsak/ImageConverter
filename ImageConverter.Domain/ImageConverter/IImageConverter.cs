@@ -1,7 +1,7 @@
 ﻿using ImageConverter.Domain.Dto;
 using ImageMagick;
 
-namespace ImageConverter.Domain
+namespace ImageConverter.Domain.ImageConverter
 {
     public interface IImageConverter
     {

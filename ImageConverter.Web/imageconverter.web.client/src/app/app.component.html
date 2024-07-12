@@ -72,13 +72,13 @@
 
 <mat-tab-group animationDuration="0ms" (selectedTabChange)="tabChanged($event)">
   <mat-tab label="Queue">
-    <div class="queue" *ngIf="this.isInCompressingState()">
+    <div class="queue-entries" *ngIf="this.isInCompressingState()">
       <div *ngFor="let processingQueueItem of processingQueueItems" class="queueItem">
         <p style="text-align:left">{{ processingQueueItem.queueItem.fullPath }} - {{ this.getQueueState(processingQueueItem.state) }}, Q: {{ processingQueueItem.quality }}, I: {{ processingQueueItem.inputFileSize | filesize }}, O: {{ processingQueueItem.outputFileSize | filesize }}</p>
         <hr>
       </div>
     </div>
-    <div class="queue" *ngIf="this.isInCollectingState()">
+    <div class="processingPath-entries" *ngIf="this.isInCollectingState()">
       <div *ngFor="let processingPath of processingPaths" class="queueItem">
         <p style="text-align:left">Collecting from {{ processingPath }}</p>
         <hr>

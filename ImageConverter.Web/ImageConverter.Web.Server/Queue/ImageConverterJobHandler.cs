@@ -1,32 +1,32 @@
-﻿using ImageConverter.Domain.DbEntities;
-using Microsoft.Extensions.Logging;
+﻿using ImageConverter.Domain.Queue;
+using ImageConverter.Domain.Storage;
 using NeoSmart.PrettySize;
 using Quartz;
 using System.Diagnostics;
 
 namespace ImageConverter.Domain.Dto
 {
-    public class ImageConverterContext
+    public class ImageConverterJobHandler : IImageConverterJobHandler
     {
+        private readonly object _lock = new();
+
         public ImageConverterSummary Sum { get; private set; } = new ImageConverterSummary();
         public JobSummary JobSummary { get; private set; } = new JobSummary();
 
         private readonly IStorageHandler storageHandler;
-        private ILogger<ImageConverterContext> logger;
-        private readonly ImageConverterJobRegistry imageConverterJobRegistry;
-
-        private readonly object lockObject = new();
+        private readonly ILogger<ImageConverterJobHandler> logger;
+        private readonly IExecutionContext executionContext;
 
         private DateTime jobStarted;
         private Stopwatch sw = new Stopwatch();
 
-        public ImageConverterContext(
+        public ImageConverterJobHandler(
             IStorageHandler storageHandler,
-            ImageConverterJobRegistry imageConverterJobRegistry,
-            ILogger<ImageConverterContext> logger)
+            IExecutionContext executionContext,
+            ILogger<ImageConverterJobHandler> logger)
         {
             this.storageHandler = storageHandler;
-            this.imageConverterJobRegistry = imageConverterJobRegistry;
+            this.executionContext = executionContext;
             this.logger = logger;
         }
 
@@ -55,7 +55,7 @@ namespace ImageConverter.Domain.Dto
 
         public void OnFileDeleted(QueueItem queueItem, long fileSize)
         {
-            lock (lockObject)
+            lock (_lock)
             {
                 JobSummary.DeletedFileCount++;
                 JobSummary.SumDeletedFileSize += fileSize;
@@ -71,9 +71,8 @@ namespace ImageConverter.Domain.Dto
                 return;
             }
 
-            lock (lockObject)
+            lock (_lock)
             {
-
                 Sum.InputBytes += inputFileInfo.Length;
                 Sum.OutputBytes += outputFileSize.Value;
                 Sum.ConvertedImageCount++;
@@ -91,7 +90,7 @@ namespace ImageConverter.Domain.Dto
 
         public void OnImageIgnored(ProcessingQueueItem processingQueueItem)
         {
-            lock (lockObject)
+            lock (_lock)
             {
                 JobSummary.IgnoredFileCount++;
                 Sum.IgnoredFileCount++;
@@ -103,7 +102,7 @@ namespace ImageConverter.Domain.Dto
 
         public void OnImageConvertFailed(ProcessingQueueItem processingQueueItem)
         {
-            lock (lockObject)
+            lock (_lock)
             {
                 JobSummary.ErrorCount++;
                 Sum.ErrorCount++;
@@ -117,7 +116,7 @@ namespace ImageConverter.Domain.Dto
         {
             LogReport();
 
-            DateTimeOffset? nextFireTimeUtc = imageConverterJobRegistry.Trigger!.GetNextFireTimeUtc();
+            DateTimeOffset? nextFireTimeUtc = executionContext.Trigger!.GetNextFireTimeUtc();
 
             if (nextFireTimeUtc != null)
             {

@@ -1,8 +1,6 @@
 ﻿using ImageConverter.Domain;
 using ImageConverter.Domain.Dto;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Quartz.Impl.Triggers;
 
 namespace ImageConverter.Configuration
 {
@@ -36,7 +34,7 @@ namespace ImageConverter.Configuration
                 {
                     if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
                     {
-                       logger.LogError("'{directory}' not found!", imageConverterConfiguration.ImageDirectories);
+                        logger.LogError("'{directory}' not found!", imageConverterConfiguration.ImageDirectories);
                     }
                 }
             }
@@ -77,7 +75,7 @@ namespace ImageConverter.Configuration
                 imageConverterConfiguration.ThreadNumber = Environment.ProcessorCount;
             }
 
-            if (imageConverterConfiguration.NewSizeRatio == null) 
+            if (imageConverterConfiguration.NewSizeRatio == null)
             {
                 imageConverterConfiguration.NewSizeRatio = DEFAULT_NEW_SIZE_RATIO;
             }

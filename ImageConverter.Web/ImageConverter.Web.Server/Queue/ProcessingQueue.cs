@@ -1,8 +1,9 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.DbEntities;
+using ImageConverter.Domain.Storage; 
 using ImageConverter.Domain.Dto;
+using ImageConverter.Domain.Queue;
 
-namespace ImageConverter.Web.Server
+namespace ImageConverter.Web.Server.Queue
 {
     public class ProcessingQueue : IProcessingQueue
     {
@@ -18,7 +19,7 @@ namespace ImageConverter.Web.Server
             if (processingQueue.Count > MaxSizeQueue)
             {
                 processingQueue.RemoveAt(0);
-            } 
+            }
             return newItem;
         }
 

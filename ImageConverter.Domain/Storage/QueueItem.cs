@@ -1,6 +1,6 @@
 ﻿using SQLite;
 
-namespace ImageConverter.Domain.DbEntities
+namespace ImageConverter.Domain.Storage
 {
     [Flags]
     public enum QueueItemState
@@ -11,7 +11,6 @@ namespace ImageConverter.Domain.DbEntities
         Ignored = 3,
         Error = 4,
     }
-
 
     public class QueueItem
     {

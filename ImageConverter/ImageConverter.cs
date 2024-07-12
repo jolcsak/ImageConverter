@@ -1,5 +1,7 @@
-﻿using ImageConverter.Domain;
-using ImageConverter.Domain.Dto;
+﻿using ImageConverter.Domain.Dto;
+using ImageConverter.Domain.ImageConverter;
+using ImageConverter.Domain.ImageConverter.ConversionRules;
+using ImageConverter.Domain.Queue;
 using ImageMagick;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,7 +17,7 @@ namespace ImageConverter
         private readonly Dictionary<string, IImageTransformer> transformers;
         private readonly ImageConverterConfiguration configuration;
         private readonly ILogger<ImageConverter> logger;
-        private readonly ImageConverterContext imageConverterContext;
+        private readonly IImageConverterJobHandler imageConverterContext;
 
         public ImageConverter(
             IEnumerable<IConversionInRule> conversionInRules, 
@@ -23,7 +25,7 @@ namespace ImageConverter
             IEnumerable<IImageTransformer> transformers,
             IOptions<ImageConverterConfiguration> configurationSettings,
             ILogger<ImageConverter> logger,
-            ImageConverterContext imageConverterContext)
+            IImageConverterJobHandler imageConverterContext)
         {
             this.conversionInRules = conversionInRules.ToDictionary(cir => cir.ImageFormat, cir => cir);
             this.conversionOutRules = conversionOutRules.ToDictionary(cir => cir.ImageFormat, cir => cir);

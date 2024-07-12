@@ -1,7 +1,7 @@
-﻿using ImageConverter.Domain.DbEntities;
+﻿using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Dto;
 
-namespace ImageConverter.Domain
+namespace ImageConverter.Domain.Queue
 {
     public interface IProcessingQueue
     {

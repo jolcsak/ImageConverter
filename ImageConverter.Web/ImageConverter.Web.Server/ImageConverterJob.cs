@@ -1,8 +1,9 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.DbEntities;
+using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Dto;
-using ImageConverter.Domain.QueueHandler;
+using ImageConverter.Domain.Queue;
 using Quartz;
+using ImageConverter.Domain.ImageConverter;
 
 namespace ImageConverter.Web.Server
 {
@@ -13,32 +14,26 @@ namespace ImageConverter.Web.Server
         private readonly IFileCleaner fileCleaner;
         private readonly ILogger<ImageConverterJob> logger;
         private readonly ImageConverterConfiguration configuration;
-        private readonly ImageConverterContext imageConverterContext;
-        private readonly IQueueHandler queueHandler;
+        private readonly IImageConverterJobHandler imageConverterContext;
         private readonly IProcessingQueue processingQueue;
         private readonly ITaskPool taskPool;
-        private readonly IExecutionContext executionContext;
 
         public ImageConverterJob(
             IImageConverter imageConverter, 
             IFileCleaner fileCleaner,
             ILogger<ImageConverterJob> logger,
             IConfigurationHandler configurationHandler, 
-            IQueueHandler queueHandler,
-            ImageConverterContext imageConverterContext,
+            IImageConverterJobHandler imageConverterContext,
             IProcessingQueue processingQueue,
-            ITaskPool taskPool,
-            IExecutionContext executionContext)
+            ITaskPool taskPool)
         {
             this.imageConverter = imageConverter;
             this.fileCleaner = fileCleaner;
             this.logger = logger;
             configuration = configurationHandler.GetConfiguration();
-            this.queueHandler = queueHandler;
             this.imageConverterContext = imageConverterContext;
             this.processingQueue = processingQueue;
             this.taskPool = taskPool;
-            this.executionContext = executionContext;
         }
 
         public async Task Execute(IJobExecutionContext context)
@@ -47,17 +42,14 @@ namespace ImageConverter.Web.Server
 
             imageConverterContext.OnJobStarted();
 
-            executionContext.ExecutionState = ExecutionState.Collecting;
-            queueHandler.Enqueue(context.CancellationToken);
+            taskPool.CollectTasks(context.CancellationToken);
 
             if (!context.CancellationToken.IsCancellationRequested)
             {
-                executionContext.ExecutionState = ExecutionState.Compressing;
                 await taskPool.ExecuteTasksAsync(DequeueAsync, context.CancellationToken);
             }
 
             imageConverterContext.OnJobFinished(context);
-            executionContext.ExecutionState = ExecutionState.Done;
         }
 
         private async Task DequeueAsync(QueueItem queueItem)

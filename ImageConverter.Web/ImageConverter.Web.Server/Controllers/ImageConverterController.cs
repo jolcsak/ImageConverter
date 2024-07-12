@@ -1,6 +1,7 @@
 using ImageConverter.Domain;
-using ImageConverter.Domain.DbEntities;
 using ImageConverter.Domain.Dto;
+using ImageConverter.Domain.Queue;
+using ImageConverter.Domain.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Quartz;
@@ -21,7 +22,6 @@ namespace ImageConverter.Web.Server.Controllers
 
         private readonly ISchedulerFactory schedulerFactory;
         private readonly ILogger<ImageConverterController> logger;      
-        private readonly ImageConverterJobRegistry imageConverterJobRegistry;
         private readonly ImageConverterConfiguration configuration;
         private readonly ITaskPool taskPool;
         private readonly IProcessingQueue processingQueue;
@@ -31,7 +31,6 @@ namespace ImageConverter.Web.Server.Controllers
             IOptions<ImageConverterConfiguration> configurationSettings, 
             ILogger<ImageConverterController> logger,
             ISchedulerFactory schedulerFactory,
-            ImageConverterJobRegistry imageConverterJobRegistry,
             ITaskPool taskPool,
             IProcessingQueue processingQueue,
             IExecutionContext executionContext)
@@ -42,7 +41,6 @@ namespace ImageConverter.Web.Server.Controllers
             sumStoragePath = Path.Combine(configuration.StoragePath!, Constants.StorageDb);
             this.schedulerFactory = schedulerFactory;
             this.logger = logger;
-            this.imageConverterJobRegistry = imageConverterJobRegistry;
             this.taskPool = taskPool;
             this.processingQueue = processingQueue;
             this.executionContext = executionContext;
@@ -62,7 +60,7 @@ namespace ImageConverter.Web.Server.Controllers
 
             if (!await IsImageConverterJobRunningAsync(scheduler))
             {
-                await scheduler.TriggerJob(imageConverterJobRegistry.JobKey!);
+                await scheduler.TriggerJob(executionContext.JobKey!);
             }
 
             return string.Empty;
@@ -75,7 +73,7 @@ namespace ImageConverter.Web.Server.Controllers
 
             if (await IsImageConverterJobRunningAsync(scheduler))
             {
-                await scheduler.Interrupt(imageConverterJobRegistry.JobKey!);
+                await scheduler.Interrupt(executionContext.JobKey!);
             }
 
             return string.Empty;
@@ -88,7 +86,7 @@ namespace ImageConverter.Web.Server.Controllers
 
             if (await IsImageConverterJobRunningAsync(scheduler))
             {
-                await scheduler.Interrupt(imageConverterJobRegistry.JobKey!);
+                await scheduler.Interrupt(executionContext.JobKey!);
             }
 
             taskPool.ClearQueue();
@@ -170,8 +168,8 @@ namespace ImageConverter.Web.Server.Controllers
         {
             IReadOnlyCollection<IJobExecutionContext> executingJobs = await scheduler.GetCurrentlyExecutingJobs();
 
-            return imageConverterJobRegistry.JobKey != null && 
-                   executingJobs.Any(ej => ej.JobDetail.Key.Equals(imageConverterJobRegistry.JobKey));
+            return executionContext.JobKey != null && 
+                   executingJobs.Any(ej => ej.JobDetail.Key.Equals(executionContext.JobKey));
         }
     }
 }

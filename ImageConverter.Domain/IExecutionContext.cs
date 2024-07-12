@@ -1,4 +1,6 @@
-﻿namespace ImageConverter.Domain
+﻿using Quartz;
+
+namespace ImageConverter.Domain
 {
     public enum ExecutionState
     {
@@ -10,5 +12,7 @@
     public interface IExecutionContext
     {
         ExecutionState ExecutionState { get; set; }
+        JobKey? JobKey { get; set; }
+        ITrigger? Trigger { get; set; }
     }
 }

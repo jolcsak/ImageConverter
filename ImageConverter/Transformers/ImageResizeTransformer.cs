@@ -1,4 +1,4 @@
-﻿using ImageConverter.Domain;
+﻿using ImageConverter.Domain.ImageConverter;
 using ImageMagick;
 
 namespace ImageConverter.Transformers

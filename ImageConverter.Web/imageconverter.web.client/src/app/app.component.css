@@ -45,6 +45,18 @@ table {
     font-weight: bold
 }
 
+.queue-entries {
+  padding-top: 10px;
+}
+
+.processingPath-entries {
+  padding-top: 10px;
+}
+
+.log-entries {
+  padding-top: 10px;
+}
+
 .start-button:hover {
   background-color: #45a049; /* Darker green on hover */
 }

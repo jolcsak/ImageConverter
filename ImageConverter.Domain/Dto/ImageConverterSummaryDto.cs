@@ -1,4 +1,4 @@
-﻿using ImageConverter.Domain.DbEntities;
+﻿using ImageConverter.Domain.Storage;
 
 namespace ImageConverter.Domain.Dto
 {

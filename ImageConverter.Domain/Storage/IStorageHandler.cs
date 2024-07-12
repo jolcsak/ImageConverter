@@ -1,7 +1,6 @@
-﻿using ImageConverter.Domain.DbEntities;
-using SQLite;
+﻿using SQLite;
 
-namespace ImageConverter.Domain
+namespace ImageConverter.Domain.Storage
 {
     public interface IStorageHandler
     {

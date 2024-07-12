@@ -1,11 +1,10 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.DbEntities;
 using ImageConverter.Domain.Dto;
-using ImageConverter.Domain.QueueHandler;
-using Microsoft.Extensions.Logging;
+using ImageConverter.Domain.Queue;
+using ImageConverter.Domain.Storage;
 using SQLite;
 
-namespace ImageConverter.QueueHandler
+namespace ImageConverter.Web.Server.Queue
 {
     public class QueueHandler : IQueueHandler
     {
@@ -16,7 +15,7 @@ namespace ImageConverter.QueueHandler
         private readonly IProcessingQueue processingQueue;
         private readonly ILogger<QueueHandler> logger;
 
-        private object _lock = new();
+        private readonly object _lock = new();
 
         public QueueHandler(
             IConfigurationHandler configurationHandler,
@@ -54,7 +53,6 @@ namespace ImageConverter.QueueHandler
                     string[] files = Directory.GetFiles(imageDirectory!, "*", SearchOption.AllDirectories);
                     foreach (string filePath in files)
                     {
-
                         FileInfo fileInfo = new FileInfo(filePath);
                         processingQueue.AddProcessingPath(fileInfo.DirectoryName);
 
@@ -65,9 +63,10 @@ namespace ImageConverter.QueueHandler
 
                         if (IsProcessable(filePath) && IsNotInQueue(db, filePath))
                         {
-                            QueueItem queue = new QueueItem { 
-                                BaseDirectory = imageDirectory, 
-                                FullPath = filePath, 
+                            QueueItem queue = new QueueItem
+                            {
+                                BaseDirectory = imageDirectory,
+                                FullPath = filePath,
                                 State = (byte)QueueItemState.Queued
                             };
                             db.Insert(queue);
