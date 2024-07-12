@@ -4,6 +4,7 @@ using Serilog;
 using ImageConverter.Web.Server;
 using ImageConverter.Domain;
 using Quartz;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ string logDbPath = Path.Combine(configuration?.StoragePath ?? string.Empty, Cons
 
 var logger = new LoggerConfiguration()
 .MinimumLevel.Information()
+.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
 .WriteTo.Console(theme: AnsiConsoleTheme.None)
 .WriteTo.SQLite(sqliteDbPath: logDbPath, batchSize: 1, retentionPeriod: new TimeSpan(7, 0, 0, 0))
 .CreateLogger();
