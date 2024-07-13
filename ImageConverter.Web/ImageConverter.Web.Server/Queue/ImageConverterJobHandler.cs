@@ -14,6 +14,7 @@ namespace ImageConverter.Domain.Dto
         public IImageConverterSummary Sum { get; private set; } = new ImageConverterSummary();
         public IJobSummary JobSummary { get; private set; } = new JobSummary();
 
+        private readonly IStorageContext storageContext;
         private readonly IStorageHandler storageHandler;
         private readonly ILogger<ImageConverterJobHandler> logger;
         private readonly IExecutionContext executionContext;
@@ -22,10 +23,12 @@ namespace ImageConverter.Domain.Dto
         private Stopwatch sw = new Stopwatch();
 
         public ImageConverterJobHandler(
+            IStorageContext storageContext,
             IStorageHandler storageHandler,
             IExecutionContext executionContext,
             ILogger<ImageConverterJobHandler> logger)
         {
+            this.storageContext = storageContext;
             this.storageHandler = storageHandler;
             this.executionContext = executionContext;
             this.logger = logger;
@@ -35,9 +38,11 @@ namespace ImageConverter.Domain.Dto
         {
             jobStarted = DateTime.Now;
 
-            storageHandler.CancelRunningJobsInStorage();
-
-            Sum = storageHandler.ReadImageConverterSummary();
+            using (IStorageContext conn = storageContext.CreateTransaction())
+            {
+                conn.JobSummaryRepository.CancelAllRunningJobs();
+                Sum = conn.ImageConverterSummaryRepository.GetImageConverterSummary();
+            }
             Sum.State = ImageConverterStates.Running.ToString();
             Sum.LastStarted = jobStarted;
             Sum.JobCount++;

@@ -25,14 +25,6 @@ namespace ImageConverter.Web.Server.Storage
 
         public SQLiteConnection GetConnection() => new SQLiteConnection(storageDbPath);
 
-        public IImageConverterSummary ReadImageConverterSummary()
-        {
-            using (var db = new SQLiteConnection(storageDbPath))
-            {
-                return db.Table<ImageConverterSummary>().FirstOrDefault() ?? new ImageConverterSummary();
-            }
-        }
-
         public void Save(IImageConverterSummary? imageSummary, IJobSummary? jobSummary, IQueueItem? updateQueueItem = null, IQueueItem? deleteQueueItem = null)
         {
             using (var db = new SQLiteConnection(storageDbPath))
@@ -68,23 +60,6 @@ namespace ImageConverter.Web.Server.Storage
                 if (deleteQueueItem != null)
                 {
                     db.Delete(deleteQueueItem);
-                }
-            }
-        }
-
-        public void CancelRunningJobsInStorage()
-        {
-            using (var db = new SQLiteConnection(storageDbPath))
-            {
-                var runningState = ImageConverterStates.Running.ToString();
-                var falseRunningJobs = db.Table<JobSummary>().Where(js => js.State == runningState).ToList();
-                if (falseRunningJobs.Any())
-                {
-                    foreach (var job in falseRunningJobs)
-                    {
-                        job.State = ImageConverterStates.Cancelled.ToString();
-                    }
-                    db.UpdateAll(falseRunningJobs);
                 }
             }
         }

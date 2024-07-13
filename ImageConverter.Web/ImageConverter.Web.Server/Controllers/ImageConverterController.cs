@@ -117,7 +117,7 @@ namespace ImageConverter.Web.Server.Controllers
             {
                 return db.Table<Logs>()
                     .OrderByDescending(l => l.Id)
-                    .Take(LogCount)
+                    .Take(LogCount).Reverse()
                     .Select(l => new LogMessage(l.Timestamp, l.RenderedMessage, l.Level)).ToArray();
             }
         }

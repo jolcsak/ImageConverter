@@ -1,13 +1,12 @@
-﻿
-using ImageConverter.Domain.Queue;
+﻿using ImageConverter.Domain.Queue;
 
-namespace ImageConverter.Domain.Storage
+namespace ImageConverter.Domain.Storage.Repositories
 {
     public interface IQueueItemRepository
     {
         int Length { get; }
 
-        void Enqueue(IQueueItem  queueItem);
+        void Enqueue(IQueueItem queueItem);
         bool TryDequeue(out IQueueItem? queueItem);
 
         public bool IsNotInQueue(string filePath);

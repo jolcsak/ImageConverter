@@ -1,5 +1,5 @@
 ﻿using ImageConverter.Domain.Queue;
-using ImageConverter.Domain.Storage;
+using ImageConverter.Domain.Storage.Repositories;
 using ImageConverter.Storage.Entities;
 
 namespace ImageConverter.Storage.Repositories
