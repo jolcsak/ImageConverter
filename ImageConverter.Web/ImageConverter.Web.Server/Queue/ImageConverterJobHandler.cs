@@ -1,5 +1,6 @@
 ﻿using ImageConverter.Domain.Queue;
 using ImageConverter.Domain.Storage;
+using ImageConverter.Storage.Entities;
 using NeoSmart.PrettySize;
 using Quartz;
 using System.Diagnostics;
@@ -10,8 +11,8 @@ namespace ImageConverter.Domain.Dto
     {
         private readonly object _lock = new();
 
-        public ImageConverterSummary Sum { get; private set; } = new ImageConverterSummary();
-        public JobSummary JobSummary { get; private set; } = new JobSummary();
+        public IImageConverterSummary Sum { get; private set; } = new ImageConverterSummary();
+        public IJobSummary JobSummary { get; private set; } = new JobSummary();
 
         private readonly IStorageHandler storageHandler;
         private readonly ILogger<ImageConverterJobHandler> logger;
@@ -48,12 +49,12 @@ namespace ImageConverter.Domain.Dto
             sw = Stopwatch.StartNew();
         }
 
-        public void Save(QueueItem? updateQueueItem = null, QueueItem? deleteQueueItem = null, bool saveJobSummary = true)
+        public void Save(IQueueItem? updateQueueItem = null, IQueueItem? deleteQueueItem = null, bool saveJobSummary = true)
         {
             storageHandler.Save(Sum, saveJobSummary ? JobSummary : null, updateQueueItem, deleteQueueItem);
         }
 
-        public void OnFileDeleted(QueueItem queueItem, long fileSize)
+        public void OnFileDeleted(IQueueItem queueItem, long fileSize)
         {
             lock (_lock)
             {
@@ -64,7 +65,7 @@ namespace ImageConverter.Domain.Dto
             }
         }
 
-        public void OnImageConverted(ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, long? outputFileSize)
+        public void OnImageConverted(IQueueItem queueItem, ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, long? outputFileSize)
         {
             if (outputFileSize == null)
             {
@@ -83,32 +84,32 @@ namespace ImageConverter.Domain.Dto
 
                 inputFileInfo.Delete();
                 processingQueueItem.State = ProcessingQueueItemState.Compressed;
-                processingQueueItem.QueueItem.State = (byte)QueueItemState.Processed;
-                Save(deleteQueueItem: processingQueueItem.QueueItem);
+                queueItem.State = (byte)QueueItemState.Processed;
+                Save(deleteQueueItem: queueItem);
             }
         }
 
-        public void OnImageIgnored(ProcessingQueueItem processingQueueItem)
+        public void OnImageIgnored(IQueueItem queueItem, ProcessingQueueItem processingQueueItem)
         {
             lock (_lock)
             {
                 JobSummary.IgnoredFileCount++;
                 Sum.IgnoredFileCount++;
                 processingQueueItem.State = ProcessingQueueItemState.Ignored;
-                processingQueueItem.QueueItem.State = (byte)QueueItemState.Ignored;
-                Save(updateQueueItem: processingQueueItem.QueueItem);
+                queueItem.State = (byte)QueueItemState.Ignored;
+                Save(updateQueueItem: queueItem);
             }
         }
 
-        public void OnImageConvertFailed(ProcessingQueueItem processingQueueItem)
+        public void OnImageConvertFailed(IQueueItem queueItem, ProcessingQueueItem processingQueueItem)
         {
             lock (_lock)
             {
                 JobSummary.ErrorCount++;
                 Sum.ErrorCount++;
                 processingQueueItem.State = ProcessingQueueItemState.Failed;
-                processingQueueItem.QueueItem.State = (byte)QueueItemState.Error;
-                Save(updateQueueItem: processingQueueItem.QueueItem);
+                queueItem.State = (byte)QueueItemState.Error;
+                Save(updateQueueItem: queueItem);
             }
         }
 
@@ -141,7 +142,7 @@ namespace ImageConverter.Domain.Dto
 
         private void LogStatistics()
         {
-            ImageConverterSummary sumStorage = Sum;
+            IImageConverterSummary sumStorage = Sum;
 
             var prettyProcessedBytes = PrettySize.Bytes(sumStorage.InputBytes);
             var prettySumSavedBytes = PrettySize.Bytes(sumStorage.OutputBytes);

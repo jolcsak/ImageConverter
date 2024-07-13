@@ -4,6 +4,7 @@ using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Queue;
 using ImageConverter.Web.Server.Queue;
 using ImageConverterStartup = ImageConverter.Startup;
+using ImageConverterStorageStartup = ImageConverter.Storage.Startup;
 
 namespace ImageConverter.Web.Server
 {
@@ -15,7 +16,6 @@ namespace ImageConverter.Web.Server
             app.Services.AddSingleton<IConfigurationHandler, ConfigurationHandler>();
             app.Services.Configure<ImageConverterConfiguration>(app.Configuration);
             app.Services.AddOptions();
-
             app.Services.AddSingleton<IExecutionContext, ExecutionContext>();
             app.Services.AddSingleton<IQueueHandler, QueueHandler>();
             app.Services.AddSingleton<ITaskPool, TaskPool>();
@@ -23,6 +23,8 @@ namespace ImageConverter.Web.Server
             app.Services.AddSingleton<IImageConverterJobHandler, ImageConverterJobHandler>();
 
             ImageConverterStartup.Configure(app);
+
+            ImageConverterStorageStartup.Configure(app);
         }
     }
 }

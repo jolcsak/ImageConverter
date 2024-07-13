@@ -2,16 +2,14 @@
 using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Queue;
 using ImageConverter.Domain.Storage;
-using SQLite;
+using ImageConverter.Storage.Entities;
 
 namespace ImageConverter.Web.Server.Queue
 {
     public class QueueHandler : IQueueHandler
     {
-        private const uint BatchSize = 100;
-
         private readonly ImageConverterConfiguration configuration;
-        private readonly IStorageHandler storageHandler;
+        private readonly IStorageContext storageContext;
         private readonly IProcessingQueue processingQueue;
         private readonly ILogger<QueueHandler> logger;
 
@@ -19,33 +17,24 @@ namespace ImageConverter.Web.Server.Queue
 
         public QueueHandler(
             IConfigurationHandler configurationHandler,
-            IStorageHandler storageHandler,
+            IStorageContext storageContext,
             IProcessingQueue processingQueue,
             ILogger<QueueHandler> logger)
         {
             configuration = configurationHandler.GetConfiguration();
-            this.storageHandler = storageHandler;
+            this.storageContext = storageContext;
             this.logger = logger;
             this.processingQueue = processingQueue;
         }
 
-        public int Length
-        {
-            get
-            {
-                using (var db = storageHandler.GetConnection())
-                {
-                    return db.Table<QueueItem>().Count(qi => qi.State == (byte)QueueItemState.Queued);
-                }
-            }
-        }
+        public int Length => storageContext.QueueItemRepository.Length;
 
         public void Enqueue(CancellationToken cancellationToken)
         {
             logger.LogInformation("Processing queue");
 
             long newItemCount = 0;
-            using (var db = storageHandler.GetConnection())
+            using (var dbContext = storageContext.CreateTransaction()) 
             {
                 foreach (string? imageDirectory in configuration.ImageDirectories!)
                 {
@@ -61,22 +50,16 @@ namespace ImageConverter.Web.Server.Queue
                             return;
                         }
 
-                        if (IsProcessable(filePath) && IsNotInQueue(db, filePath))
+                        if (IsProcessable(filePath) && dbContext.QueueItemRepository.IsNotInQueue(filePath))
                         {
-                            QueueItem queue = new QueueItem
+                            IQueueItem queueItem = new QueueItem
                             {
                                 BaseDirectory = imageDirectory,
-                                FullPath = filePath,
-                                State = (byte)QueueItemState.Queued
-                            };
-                            db.Insert(queue);
-                            logger.LogInformation("New item added to the queue: {fullPath}", queue.FullPath);
+                                FullPath = filePath
+                            };  
+                            dbContext.QueueItemRepository.Enqueue(queueItem);
+                            logger.LogInformation("New item added to the queue: {fullPath}", queueItem.FullPath);
                             newItemCount++;
-
-                            if (newItemCount % BatchSize == 0)
-                            {
-                                db.Commit();
-                            }
                         }
                     }
                 }
@@ -85,38 +68,19 @@ namespace ImageConverter.Web.Server.Queue
             logger.LogInformation("Processing queue done");
         }
 
-        public bool TryDequeue(out QueueItem? queueItem)
+        public bool TryDequeue(out IQueueItem? queueItem)
         {
-            lock (_lock)
-            {
-                using (var db = storageHandler.GetConnection())
-                {
-                    var nextItem = db.Table<QueueItem>().FirstOrDefault(qi => qi.State == (byte)QueueItemState.Queued);
-                    queueItem = nextItem;
-                    if (queueItem != null)
-                    {
-                        queueItem.State = (byte)QueueItemState.Processing;
-                        db.Update(queueItem);
-                        return true;
-                    }
-                    return false;
-                }
-            }
+            return storageContext.QueueItemRepository.TryDequeue(out queueItem);
         }
 
         public void ClearQueue()
         {
-            storageHandler.ClearQueue();
+            storageContext.QueueItemRepository.ClearQueue();
         }
 
         private bool IsProcessable(string filePath)
         {
             return configuration.SearchPattern!.Any(f => filePath.EndsWith("." + f, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        private static bool IsNotInQueue(SQLiteConnection db, string filePath)
-        {
-            return !db.Table<QueueItem>().Any(q => q.FullPath == filePath);
         }
     }
 }

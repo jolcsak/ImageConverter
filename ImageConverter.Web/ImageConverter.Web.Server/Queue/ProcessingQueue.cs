@@ -1,5 +1,4 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.Storage; 
 using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Queue;
 
@@ -12,9 +11,9 @@ namespace ImageConverter.Web.Server.Queue
         private readonly ThreadSafeList<ProcessingQueueItem> processingQueue = new();
         private readonly ThreadSafeList<string> processingPaths = new();
 
-        public ProcessingQueueItem AddQueueItem(QueueItem queueItem)
+        public ProcessingQueueItem AddQueueItem(string path)
         {
-            var newItem = new ProcessingQueueItem(queueItem, ProcessingQueueItemState.Compressing);
+            var newItem = new ProcessingQueueItem(path, ProcessingQueueItemState.Compressing);
             processingQueue.Add(newItem);
             if (processingQueue.Count > MaxSizeQueue)
             {

@@ -3,8 +3,10 @@ using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Dto;
 using Microsoft.Extensions.Options;
 using SQLite;
+using ImageConverter.Storage.Entities;
+using ImageConverter.Domain.Queue;
 
-namespace ImageConverter.Storage
+namespace ImageConverter.Web.Server.Storage
 {
     public class StorageHandler : IStorageHandler
     {
@@ -23,7 +25,7 @@ namespace ImageConverter.Storage
 
         public SQLiteConnection GetConnection() => new SQLiteConnection(storageDbPath);
 
-        public ImageConverterSummary ReadImageConverterSummary()
+        public IImageConverterSummary ReadImageConverterSummary()
         {
             using (var db = new SQLiteConnection(storageDbPath))
             {
@@ -31,23 +33,7 @@ namespace ImageConverter.Storage
             }
         }
 
-        public void DeleteQueueItem(QueueItem queueItem)
-        {
-            using (var db = new SQLiteConnection(storageDbPath))
-            {
-                db.Delete(queueItem);
-            }
-        }
-
-        public void UpdateQueueItem(QueueItem queueItem)
-        {
-            using (var db = new SQLiteConnection(storageDbPath))
-            {
-                db.Update(queueItem);
-            }
-        }
-
-        public void Save(ImageConverterSummary? imageSummary, JobSummary? jobSummary, QueueItem? updateQueueItem = null, QueueItem? deleteQueueItem = null)
+        public void Save(IImageConverterSummary? imageSummary, IJobSummary? jobSummary, IQueueItem? updateQueueItem = null, IQueueItem? deleteQueueItem = null)
         {
             using (var db = new SQLiteConnection(storageDbPath))
             {
@@ -81,7 +67,7 @@ namespace ImageConverter.Storage
 
                 if (deleteQueueItem != null)
                 {
-                    db.Delete(deleteQueueItem); 
+                    db.Delete(deleteQueueItem);
                 }
             }
         }
@@ -100,14 +86,6 @@ namespace ImageConverter.Storage
                     }
                     db.UpdateAll(falseRunningJobs);
                 }
-            }
-        }
-
-        public void ClearQueue()
-        {
-            using (var db = new SQLiteConnection(storageDbPath))
-            {
-                db.Table<QueueItem>().Delete(qi => true);
             }
         }
     }

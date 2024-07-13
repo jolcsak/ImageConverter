@@ -6,7 +6,7 @@ namespace ImageConverter.Domain.Queue
     public interface IProcessingQueue
     {
         void AddProcessingPath(string? processingPath);
-        ProcessingQueueItem AddQueueItem(QueueItem queueItem);
+        ProcessingQueueItem AddQueueItem(string basePath);
         ICollection<string> GetLastProcessingPaths();
         ICollection<ProcessingQueueItem> GetLastQueueItems();
 

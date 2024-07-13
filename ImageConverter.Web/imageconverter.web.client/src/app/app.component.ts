@@ -45,18 +45,11 @@ enum ProcessingQueueItemState {
 }
 
 interface ProcessingQueueItem {
+  path: string;
   state: ProcessingQueueItemState,
   inputFileSize: number,
   outputFileSize: number,
   quality: number,
-  queueItem: QueueItem;
-}
-
-interface QueueItem {
-  id: number;
-  baseDirectory: string;
-  fullPath: string;
-  state: number;
 }
 
 enum ExecutionState {

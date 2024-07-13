@@ -1,5 +1,4 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Queue;
 using Quartz;
@@ -52,9 +51,9 @@ namespace ImageConverter.Web.Server
             imageConverterContext.OnJobFinished(context);
         }
 
-        private async Task DequeueAsync(QueueItem queueItem)
+        private async Task DequeueAsync(IQueueItem queueItem)
         {
-            ProcessingQueueItem processingQueueItem = processingQueue.AddQueueItem(queueItem);
+            ProcessingQueueItem processingQueueItem = processingQueue.AddQueueItem(queueItem.FullPath);
             try
             {
                 string file = queueItem.FullPath;
@@ -72,12 +71,12 @@ namespace ImageConverter.Web.Server
                     if (!IsSkippable(configuration.SkipPostfix!, fileInfo))
                     {
                         long? outputFileSize =
-                            await imageConverter!.ConvertImage(processingQueueItem, fileInfo, configuration.Transformers, configuration.OutputFormat!.Value);
-                        imageConverterContext.OnImageConverted(processingQueueItem, fileInfo, outputFileSize.Value);
+                            await imageConverter!.ConvertImage(queueItem.BaseDirectory, processingQueueItem, fileInfo, configuration.Transformers, configuration.OutputFormat!.Value);
+                        imageConverterContext.OnImageConverted(queueItem, processingQueueItem, fileInfo, outputFileSize.Value);
                     }
                     else
                     {
-                        imageConverterContext.OnImageIgnored(processingQueueItem);
+                        imageConverterContext.OnImageIgnored(queueItem, processingQueueItem);
                         logger.LogWarning($"{file}: skipped by skip postfix settings('{configuration.SkipPostfix!}').");
                     }
                 }
@@ -85,7 +84,7 @@ namespace ImageConverter.Web.Server
             catch (Exception ex)
             {
                 logger.LogError("There is an error during the image conversion: " + ex.Message);
-                imageConverterContext.OnImageConvertFailed(processingQueueItem);
+                imageConverterContext.OnImageConvertFailed(queueItem, processingQueueItem);
             }
         }   
 

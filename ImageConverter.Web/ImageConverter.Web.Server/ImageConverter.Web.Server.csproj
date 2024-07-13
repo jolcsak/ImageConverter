@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ImageConverter.Domain\ImageConverter.Domain.csproj" />
+    <ProjectReference Include="..\..\ImageConverter.Storage\ImageConverter.Storage.csproj" />
     <ProjectReference Include="..\..\ImageConverter\ImageConverter.csproj" />
     <ProjectReference Include="..\imageconverter.web.client\Imageconverter.Web.Client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

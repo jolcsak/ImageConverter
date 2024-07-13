@@ -5,6 +5,6 @@ namespace ImageConverter.Domain.ImageConverter
 {
     public interface IImageConverter
     {
-        Task<long?> ConvertImage(ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, string[]? transformerKeys, MagickFormat outputFormat);
+        Task<long?> ConvertImage(string basePath, ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, string[]? transformerKeys, MagickFormat outputFormat);
     }
 }

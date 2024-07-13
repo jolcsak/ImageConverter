@@ -74,7 +74,7 @@
   <mat-tab label="Queue">
     <div class="queue-entries" *ngIf="this.isInCompressingState()">
       <div *ngFor="let processingQueueItem of processingQueueItems" class="queueItem">
-        <p style="text-align:left">{{ processingQueueItem.queueItem.fullPath }} - {{ this.getQueueState(processingQueueItem.state) }}, Q: {{ processingQueueItem.quality }}, I: {{ processingQueueItem.inputFileSize | filesize }}, O: {{ processingQueueItem.outputFileSize | filesize }}</p>
+        <p style="text-align:left">{{ processingQueueItem.path }} - {{ this.getQueueState(processingQueueItem.state) }}, Q: {{ processingQueueItem.quality }}, I: {{ processingQueueItem.inputFileSize | filesize }}, O: {{ processingQueueItem.outputFileSize | filesize }}</p>
         <hr>
       </div>
     </div>

@@ -1,8 +1,9 @@
-﻿using SQLite;
+﻿using ImageConverter.Domain.Storage;
+using SQLite;
 
-namespace ImageConverter.Domain.Storage
+namespace ImageConverter.Storage.Entities
 {
-    public class JobSummary
+    public class JobSummary : IJobSummary
     {
         [PrimaryKey, AutoIncrement]
         public long Id { get; set; }

@@ -1,7 +1,7 @@
 using ImageConverter.Domain;
 using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Queue;
-using ImageConverter.Domain.Storage;
+using ImageConverter.Storage.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Quartz;

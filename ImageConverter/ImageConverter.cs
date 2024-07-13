@@ -35,9 +35,8 @@ namespace ImageConverter
             this.imageConverterContext = imageConverterContext; 
         }
 
-        public async Task<long?> ConvertImage(ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, string[]? transformerKeys, MagickFormat outputFormat)
+        public async Task<long?> ConvertImage(string basePath, ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, string[]? transformerKeys, MagickFormat outputFormat)
         {
-            string basePath = processingQueueItem.QueueItem.BaseDirectory;
             try
             {
                 string outputExtension = outputFormat.ToString();

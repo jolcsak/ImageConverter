@@ -1,10 +1,7 @@
 ﻿using ImageConverter.ConversionRules.In;
 using ImageConverter.ConversionRules.Out;
-using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.ImageConverter;
 using ImageConverter.Domain.ImageConverter.ConversionRules;
-using ImageConverter.Domain.Storage;
-using ImageConverter.Storage;
 using ImageConverter.Transformers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,8 +21,6 @@ namespace ImageConverter
             app.Services.AddTransient<IImageTransformer, ImageResizeTransformer>();
 
             app.Services.AddTransient<IFileCleaner, FileCleaner>();
-
-            app.Services.AddSingleton<IStorageHandler, StorageHandler>();
         }
     }
 }

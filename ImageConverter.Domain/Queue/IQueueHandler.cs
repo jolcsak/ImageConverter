@@ -6,7 +6,7 @@ namespace ImageConverter.Domain.Queue
     {
         int Length { get; }
         void Enqueue(CancellationToken cancellationToken);
-        bool TryDequeue(out QueueItem? queueItem);
+        bool TryDequeue(out IQueueItem? queueItem);
         void ClearQueue();
     }
 }

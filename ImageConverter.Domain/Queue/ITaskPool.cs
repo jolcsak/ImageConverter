@@ -1,6 +1,4 @@
-﻿using ImageConverter.Domain.Storage;
-
-namespace ImageConverter.Domain.Queue
+﻿namespace ImageConverter.Domain.Queue
 {
     public interface ITaskPool
     {
@@ -8,6 +6,6 @@ namespace ImageConverter.Domain.Queue
 
         void ClearQueue();
         void CollectTasks(CancellationToken cancellationToken);
-        Task ExecuteTasksAsync(Func<QueueItem, Task> task, CancellationToken cancellationToken);
+        Task ExecuteTasksAsync(Func<IQueueItem, Task> task, CancellationToken cancellationToken);
     }
 }

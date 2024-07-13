@@ -1,5 +1,4 @@
 ﻿using ImageConverter.Domain;
-using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Queue;
 
 namespace ImageConverter.Web.Server.Queue
@@ -36,7 +35,7 @@ namespace ImageConverter.Web.Server.Queue
             queueHandler.Enqueue(cancellationToken);
         }
 
-        public async Task ExecuteTasksAsync(Func<QueueItem, Task> task, CancellationToken cancellationToken)
+        public async Task ExecuteTasksAsync(Func<IQueueItem, Task> task, CancellationToken cancellationToken)
         {
             executionContext.ExecutionState = ExecutionState.Compressing;
 

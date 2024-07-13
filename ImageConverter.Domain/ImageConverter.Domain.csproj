@@ -9,9 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.8.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Quartz" Version="3.9.0" />
-    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
-	<PackageReference Include="NeoSmart.PrettySize" Version="3.1.1" />	  
+    <PackageReference Include="Quartz" Version="3.9.0" />	  
   </ItemGroup>
 
 </Project>

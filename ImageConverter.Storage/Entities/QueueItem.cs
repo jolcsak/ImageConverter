@@ -1,18 +1,9 @@
-﻿using SQLite;
+﻿using ImageConverter.Domain.Queue;
+using SQLite;
 
-namespace ImageConverter.Domain.Storage
+namespace ImageConverter.Storage.Entities
 {
-    [Flags]
-    public enum QueueItemState
-    {
-        Queued = 0,
-        Processing = 1,
-        Processed = 2,
-        Ignored = 3,
-        Error = 4,
-    }
-
-    public class QueueItem
+    public class QueueItem : IQueueItem
     {
         [PrimaryKey, AutoIncrement]
         public long Id { get; set; }
