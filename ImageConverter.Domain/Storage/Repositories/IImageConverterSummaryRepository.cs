@@ -3,5 +3,6 @@
     public interface IImageConverterSummaryRepository
     {
         IImageConverterSummary GetImageConverterSummary();
+        void Upsert(IImageConverterSummary? imageConverterSummary);
     }
 }

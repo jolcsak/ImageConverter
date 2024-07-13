@@ -19,6 +19,12 @@ namespace ImageConverter.Storage.Repositories
         public int Length =>
             DbGet(con => con.Table<QueueItem>().Count(qi => qi.State == (byte)QueueItemState.Queued));
 
+        public void Update(IQueueItem? queueItem)
+            => base.Update(queueItem);
+
+        public void Delete(IQueueItem? queueItem)
+            => base.Delete(queueItem);
+
         public void Enqueue(IQueueItem queueItem)
         {
             Db(db =>

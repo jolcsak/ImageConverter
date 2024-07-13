@@ -1,11 +1,10 @@
-﻿
-using ImageConverter.Domain.Storage.Repositories;
+﻿using ImageConverter.Domain.Storage.Repositories;
 
 namespace ImageConverter.Domain.Storage
 {
     public interface IStorageContext : IDisposable
     {
-        public IQueueItemRepository QueueItemRepository { get; }
+        IQueueItemRepository QueueItemRepository { get; }
         IJobSummaryRepository JobSummaryRepository { get; }
         IImageConverterSummaryRepository ImageConverterSummaryRepository { get; }
 

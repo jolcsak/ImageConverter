@@ -13,5 +13,21 @@ namespace ImageConverter.Storage.Repositories
         public IImageConverterSummary GetImageConverterSummary()
             => DbGet(db => db.Table<ImageConverterSummary>().FirstOrDefault() ?? new ImageConverterSummary());
 
+        public void Upsert(IImageConverterSummary? imageConverterSummary)
+            => Db(db =>
+            {
+                if (imageConverterSummary != null)
+                {
+                    if (db.Table<ImageConverterSummary>().FirstOrDefault() == null)
+                    {
+                        db.Insert(imageConverterSummary);
+                    }
+                    else
+                    {
+                        db.Update(imageConverterSummary);
+                    }
+                }
+            });
+
     }
 }

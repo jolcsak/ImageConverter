@@ -2,6 +2,7 @@
 using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Storage.Repositories;
+using ImageConverter.Storage.Entities;
 using ImageConverter.Storage.Repositories;
 using Microsoft.Extensions.Options;
 using SQLite;
@@ -23,9 +24,21 @@ namespace ImageConverter.Storage
             this.configurationSettings = configurationSettings;
             storageDbPath = Path.Combine(configurationSettings.Value.StoragePath!, Constants.StorageDb);
 
+            CreateNotExistingDbObjects();
+
             QueueItemRepository = new QueueItemRepository(this);
             JobSummaryRepository = new JobSummaryRepository(this);
             ImageConverterSummaryRepository = new ImageConverterSummaryRepository(this);
+        }
+
+        private void CreateNotExistingDbObjects()
+        {
+            using (var db = new SQLiteConnection(storageDbPath))
+            {
+                db.CreateTable<ImageConverterSummary>();
+                db.CreateTable<JobSummary>();
+                db.CreateTable<QueueItem>();
+            }
         }
 
         private StorageContext(IOptions<ImageConverterConfiguration> configurationSettings, SQLiteConnection connection) : this(configurationSettings)

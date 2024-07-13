@@ -1,4 +1,5 @@
 ﻿using ImageConverter.Domain.Dto;
+using ImageConverter.Domain.Storage;
 using ImageConverter.Domain.Storage.Repositories;
 using ImageConverter.Storage.Entities;
 
@@ -8,6 +9,24 @@ namespace ImageConverter.Storage.Repositories
     {
         public JobSummaryRepository(StorageContext storageContext) : base(storageContext)
         {
+        }
+
+        public void Upsert(IJobSummary? jobSummary)
+        {
+            Db(db =>
+            {
+                if (jobSummary != null)
+                {
+                    if (jobSummary.Id == 0)
+                    {
+                        db.Insert(jobSummary);
+                    }
+                    else
+                    {
+                        db.Update(jobSummary);
+                    }
+                }
+            }); 
         }
 
         public void CancelAllRunningJobs()

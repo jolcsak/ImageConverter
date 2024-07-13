@@ -15,7 +15,6 @@ namespace ImageConverter.Domain.Dto
         public IJobSummary JobSummary { get; private set; } = new JobSummary();
 
         private readonly IStorageContext storageContext;
-        private readonly IStorageHandler storageHandler;
         private readonly ILogger<ImageConverterJobHandler> logger;
         private readonly IExecutionContext executionContext;
 
@@ -24,12 +23,10 @@ namespace ImageConverter.Domain.Dto
 
         public ImageConverterJobHandler(
             IStorageContext storageContext,
-            IStorageHandler storageHandler,
             IExecutionContext executionContext,
             ILogger<ImageConverterJobHandler> logger)
         {
             this.storageContext = storageContext;
-            this.storageHandler = storageHandler;
             this.executionContext = executionContext;
             this.logger = logger;
         }
@@ -56,7 +53,13 @@ namespace ImageConverter.Domain.Dto
 
         public void Save(IQueueItem? updateQueueItem = null, IQueueItem? deleteQueueItem = null, bool saveJobSummary = true)
         {
-            storageHandler.Save(Sum, saveJobSummary ? JobSummary : null, updateQueueItem, deleteQueueItem);
+            using (IStorageContext conn = storageContext.CreateTransaction())
+            {
+                conn.ImageConverterSummaryRepository.Upsert(Sum);
+                conn.JobSummaryRepository.Upsert(saveJobSummary ? JobSummary : null);
+                conn.QueueItemRepository.Update(updateQueueItem);
+                conn.QueueItemRepository.Delete(deleteQueueItem);
+            }
         }
 
         public void OnFileDeleted(IQueueItem queueItem, long fileSize)

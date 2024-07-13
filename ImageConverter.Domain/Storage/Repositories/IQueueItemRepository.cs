@@ -6,6 +6,9 @@ namespace ImageConverter.Domain.Storage.Repositories
     {
         int Length { get; }
 
+        void Update(IQueueItem? queueItem);
+        void Delete(IQueueItem? queueItem);
+
         void Enqueue(IQueueItem queueItem);
         bool TryDequeue(out IQueueItem? queueItem);
 

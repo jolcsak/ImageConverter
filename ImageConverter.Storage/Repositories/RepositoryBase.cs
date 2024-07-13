@@ -40,5 +40,27 @@ namespace ImageConverter.Storage.Repositories
                 return f(storageContext.Connection);
             }
         }
+
+        public void Update<T>(T entity)
+        {
+            Db(db =>
+            {
+                if (entity != null)
+                {
+                    db.Update(entity);
+                }
+            });
+        }
+
+        public void Delete<T>(T entity)
+        {
+            Db(db =>
+            {
+                if (entity != null)
+                {
+                    db.Delete(entity);
+                }
+            });
+        }
     }
 }
