@@ -27,7 +27,6 @@
       <Version>8.*-*</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
-    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="NeoSmart.PrettySize" Version="3.1.1" />
 	<PackageReference Include="Quartz" Version="3.9.0" />
