@@ -9,6 +9,7 @@ namespace ImageConverter.Storage
         public static void Configure(IHostApplicationBuilder app)
         {
             app.Services.AddSingleton<IStorageContext, StorageContext>();
+            app.Services.AddSingleton<ILogStorageContext, LogStorageContext>();
         }
     }
 }

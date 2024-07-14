@@ -9,15 +9,16 @@ using SQLite;
 
 namespace ImageConverter.Storage
 {
-    public class StorageContext : IStorageContext
+    public class StorageContext : StorageContextBase, IStorageContext
     {
         private string storageDbPath;
         private readonly IOptions<ImageConverterConfiguration> configurationSettings;
-        internal SQLiteConnection? Connection { get; set; }
 
         public IQueueItemRepository QueueItemRepository { get; private set; }
         public IJobSummaryRepository JobSummaryRepository { get; private set; }
         public IImageConverterSummaryRepository ImageConverterSummaryRepository { get; private set; }
+
+        protected override string StoragePath => storageDbPath;
 
         public StorageContext(IOptions<ImageConverterConfiguration> configurationSettings)
         {
@@ -31,6 +32,11 @@ namespace ImageConverter.Storage
             ImageConverterSummaryRepository = new ImageConverterSummaryRepository(this);
         }
 
+        private StorageContext(IOptions<ImageConverterConfiguration> configurationSettings, SQLiteConnection connection) : this(configurationSettings)
+        {
+            Connection = connection;
+        }
+
         private void CreateNotExistingDbObjects()
         {
             using (var db = new SQLiteConnection(storageDbPath))
@@ -41,27 +47,9 @@ namespace ImageConverter.Storage
             }
         }
 
-        private StorageContext(IOptions<ImageConverterConfiguration> configurationSettings, SQLiteConnection connection) : this(configurationSettings)
-        {
-            Connection = connection;
-        }
-
-        public SQLiteConnection CreateConnection()
-        {
-            return Connection ?? new SQLiteConnection(storageDbPath);
-        }
-
         public IStorageContext CreateTransaction()
         {
             return new StorageContext(configurationSettings, CreateConnection());
-        }
-
-        public void Dispose()
-        {
-            if (Connection != null)
-            {
-                Connection.Dispose();
-            }
         }
     }
 }

@@ -7,6 +7,8 @@ namespace ImageConverter.Storage.Repositories
 {
     public class JobSummaryRepository : RepositoryBase, IJobSummaryRepository
     {
+        private const int JobSummaryCount = 20;
+
         public JobSummaryRepository(StorageContext storageContext) : base(storageContext)
         {
         }
@@ -26,7 +28,7 @@ namespace ImageConverter.Storage.Repositories
                         db.Update(jobSummary);
                     }
                 }
-            }); 
+            });
         }
 
         public void CancelAllRunningJobs()
@@ -43,6 +45,22 @@ namespace ImageConverter.Storage.Repositories
                     }
                     db.UpdateAll(falseRunningJobs);
                 }
+            });
+        }
+
+        public IJobSummary GetLastJobSummary()
+        {
+            return DbGet(db => db.Table<JobSummary>().LastOrDefault() ?? new JobSummary());
+        }
+
+        public IEnumerable<IJobSummary> GetJobSummaries()
+        {
+            return DbGet(db =>
+            {
+                return db.Table<JobSummary>()
+                                    .OrderByDescending(l => l.Id)
+                                    .Take(JobSummaryCount)
+                                    .ToArray();
             });
         }
     }

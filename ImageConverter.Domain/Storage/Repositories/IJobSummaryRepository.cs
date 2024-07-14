@@ -1,8 +1,11 @@
-﻿namespace ImageConverter.Domain.Storage.Repositories
+﻿
+namespace ImageConverter.Domain.Storage.Repositories
 {
     public interface IJobSummaryRepository
     {
-        void CancelAllRunningJobs();
+        IJobSummary GetLastJobSummary();
         void Upsert(IJobSummary? jobSummary);
+        IEnumerable<IJobSummary> GetJobSummaries();
+        void CancelAllRunningJobs();
     }
 }

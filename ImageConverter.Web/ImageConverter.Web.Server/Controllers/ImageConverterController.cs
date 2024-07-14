@@ -1,11 +1,10 @@
 using ImageConverter.Domain;
 using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Queue;
-using ImageConverter.Storage.Entities;
+using ImageConverter.Domain.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Quartz;
-using SQLite;
 using System.Diagnostics;
 
 namespace ImageConverter.Web.Server.Controllers
@@ -14,9 +13,6 @@ namespace ImageConverter.Web.Server.Controllers
     [Route("[controller]/[action]")]
     public class ImageConverterController : ControllerBase
     {
-        private const int LogCount = 20;
-        private const int JobSummaryCount = 20;
-
         private readonly string storageLogPath;
         private readonly string sumStoragePath;
 
@@ -24,6 +20,8 @@ namespace ImageConverter.Web.Server.Controllers
         private readonly ILogger<ImageConverterController> logger;      
         private readonly ImageConverterConfiguration configuration;
         private readonly ITaskPool taskPool;
+        private readonly IStorageContext storageContext;
+        private readonly ILogStorageContext logStorageContext;
         private readonly IProcessingQueue processingQueue;
         private readonly IExecutionContext executionContext;
 
@@ -33,7 +31,9 @@ namespace ImageConverter.Web.Server.Controllers
             ISchedulerFactory schedulerFactory,
             ITaskPool taskPool,
             IProcessingQueue processingQueue,
-            IExecutionContext executionContext)
+            IExecutionContext executionContext,
+            IStorageContext storageContext,
+            ILogStorageContext logStorageContext)
         {
             configuration = configurationSettings.Value;
 
@@ -44,6 +44,8 @@ namespace ImageConverter.Web.Server.Controllers
             this.taskPool = taskPool;
             this.processingQueue = processingQueue;
             this.executionContext = executionContext;
+            this.storageContext = storageContext;
+            this.logStorageContext = logStorageContext;
         }
 
         [HttpGet]
@@ -113,43 +115,25 @@ namespace ImageConverter.Web.Server.Controllers
         [HttpGet]
         public IEnumerable<LogMessage> GetLogs()
         {
-            using (var db = new SQLiteConnection(storageLogPath))
-            {
-                return db.Table<Logs>()
-                    .OrderByDescending(l => l.Id)
-                    .Take(LogCount).Reverse()
-                    .Select(l => new LogMessage(l.Timestamp, l.RenderedMessage, l.Level)).ToArray();
-            }
+            return logStorageContext.LogsRepository.GetLastLogMessages();
         }
 
         [HttpGet]
-        public IEnumerable<JobSummary> GetJobSummaries()
+        public IEnumerable<IJobSummary> GetJobSummaries()
         {
-            using (var db = new SQLiteConnection(sumStoragePath))
-            {
-                return db.Table<JobSummary>()
-                    .OrderByDescending(l => l.Id)
-                    .Take(JobSummaryCount)
-                    .ToArray();
-            }
+            return storageContext.JobSummaryRepository.GetJobSummaries();
         }
 
         [HttpGet]
-        public ImageConverterSummary GetImageConverterSummary()
+        public IImageConverterSummary GetImageConverterSummary()
         {
-            using (var db = new SQLiteConnection(sumStoragePath))
-            {
-                return db.Table<ImageConverterSummary>().FirstOrDefault() ?? new ImageConverterSummary();
-            }
+            return storageContext.ImageConverterSummaryRepository.GetImageConverterSummary();
         }
 
         [HttpGet]
-        public JobSummary GetJobSummary()
+        public IJobSummary GetJobSummary()
         {
-            using (var db = new SQLiteConnection(sumStoragePath))
-            {
-                return db.Table<JobSummary>().LastOrDefault() ?? new JobSummary();
-            }
+            return storageContext.JobSummaryRepository.GetLastJobSummary();
         }
 
         [HttpGet]

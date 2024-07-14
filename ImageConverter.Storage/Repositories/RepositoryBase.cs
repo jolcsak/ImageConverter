@@ -4,9 +4,9 @@ namespace ImageConverter.Storage.Repositories
 {
     public class RepositoryBase
     {
-        protected readonly StorageContext storageContext;
+        protected readonly StorageContextBase storageContext;
 
-        protected RepositoryBase(StorageContext storageContext)
+        protected RepositoryBase(StorageContextBase storageContext)
         { 
             this.storageContext = storageContext;
         }
