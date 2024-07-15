@@ -73,13 +73,13 @@ namespace ImageConverter.Web.Server
 
         private void UpdateSummaries(ImageConverterConfiguration configuration, ITrigger trigger)
         {
-            imageConverterContext.Sum.State = ImageConverterStates.NotStarted.ToString();
+            imageConverterContext.AllSummary.State = ImageConverterStates.NotStarted.ToString();
 
             DateTimeOffset? nextFireTimeUtc = trigger.GetNextFireTimeUtc();
             if (nextFireTimeUtc != null)
             {
                 DateTime nextFireTime = nextFireTimeUtc.Value.LocalDateTime;
-                imageConverterContext.Sum.NextFire = nextFireTime;
+                imageConverterContext.AllSummary.NextFire = nextFireTime;
                 logger.LogInformation("Next fire time: {nextFireTime}", nextFireTime);
             }
             else

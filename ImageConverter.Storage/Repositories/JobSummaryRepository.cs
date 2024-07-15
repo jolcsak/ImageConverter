@@ -13,6 +13,17 @@ namespace ImageConverter.Storage.Repositories
         {
         }
 
+        public IJobSummary New(DateTime jobStarted, string? state)
+        {
+            return DbGet(db =>
+                {
+                    var jobSummary = new JobSummary { JobStarted = jobStarted, State = state };
+                    db.Insert(jobSummary);
+                    return jobSummary;
+                }
+            );
+        }
+
         public void Upsert(IJobSummary? jobSummary)
         {
             Db(db =>

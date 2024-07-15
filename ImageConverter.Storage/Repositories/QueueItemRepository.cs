@@ -25,11 +25,16 @@ namespace ImageConverter.Storage.Repositories
         public void Delete(IQueueItem? queueItem)
             => base.Delete(queueItem);
 
-        public void Enqueue(IQueueItem queueItem)
+        public void Enqueue(string baseDirectory, string filePath)
         {
             Db(db =>
             {
-                queueItem.State = (byte)QueueItemState.Queued;
+                IQueueItem queueItem = new QueueItem
+                {
+                    BaseDirectory = baseDirectory,
+                    FullPath = filePath,
+                    State = (byte)QueueItemState.Queued
+                };
                 db.Insert(queueItem);
                 enqueueCounter++;
                 if (enqueueCounter % EnqueueBatchSize == 0)

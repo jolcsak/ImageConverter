@@ -13,6 +13,9 @@ namespace ImageConverter.Storage.Repositories
         public IImageConverterSummary GetImageConverterSummary()
             => DbGet(db => db.Table<ImageConverterSummary>().FirstOrDefault() ?? new ImageConverterSummary());
 
+        public void Update(IImageConverterSummary? imageConverterSummary)
+            => Db(db => db.Update(imageConverterSummary));
+
         public void Upsert(IImageConverterSummary? imageConverterSummary)
             => Db(db =>
             {
@@ -28,6 +31,5 @@ namespace ImageConverter.Storage.Repositories
                     }
                 }
             });
-
     }
 }

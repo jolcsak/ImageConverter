@@ -2,7 +2,6 @@
 using ImageConverter.Domain.Dto;
 using ImageConverter.Domain.Queue;
 using ImageConverter.Domain.Storage;
-using ImageConverter.Storage.Entities;
 
 namespace ImageConverter.Web.Server.Queue
 {
@@ -38,27 +37,27 @@ namespace ImageConverter.Web.Server.Queue
             {
                 foreach (string? imageDirectory in configuration.ImageDirectories!)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     logger.LogInformation("Getting files for : {dir}", imageDirectory);
                     string[] files = Directory.GetFiles(imageDirectory!, "*", SearchOption.AllDirectories);
                     foreach (string filePath in files)
                     {
-                        FileInfo fileInfo = new FileInfo(filePath);
-                        processingQueue.AddProcessingPath(fileInfo.DirectoryName);
-
                         if (cancellationToken.IsCancellationRequested)
                         {
                             return;
                         }
 
+                        FileInfo fileInfo = new FileInfo(filePath);
+                        processingQueue.AddProcessingPath(fileInfo.DirectoryName);
+
                         if (IsProcessable(filePath) && dbContext.QueueItemRepository.IsNotInQueue(filePath))
                         {
-                            IQueueItem queueItem = new QueueItem
-                            {
-                                BaseDirectory = imageDirectory,
-                                FullPath = filePath
-                            };  
-                            dbContext.QueueItemRepository.Enqueue(queueItem);
-                            logger.LogInformation("New item added to the queue: {fullPath}", queueItem.FullPath);
+                            dbContext.QueueItemRepository.Enqueue(imageDirectory, filePath);
+                            logger.LogInformation("New item added to the queue: {filePath}", filePath);
                             newItemCount++;
                         }
                     }

@@ -9,7 +9,7 @@ namespace ImageConverter.Domain.Storage.Repositories
         void Update(IQueueItem? queueItem);
         void Delete(IQueueItem? queueItem);
 
-        void Enqueue(IQueueItem queueItem);
+        void Enqueue(string baseDirectory, string filePath);
         bool TryDequeue(out IQueueItem? queueItem);
 
         public bool IsNotInQueue(string filePath);

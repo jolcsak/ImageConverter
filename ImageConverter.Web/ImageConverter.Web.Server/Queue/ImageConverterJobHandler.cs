@@ -11,7 +11,7 @@ namespace ImageConverter.Domain.Dto
     {
         private readonly object _lock = new();
 
-        public IImageConverterSummary Sum { get; private set; } = new ImageConverterSummary();
+        public IImageConverterSummary AllSummary { get; private set; } = new ImageConverterSummary();
         public IJobSummary JobSummary { get; private set; } = new JobSummary();
 
         private readonly IStorageContext storageContext;
@@ -38,15 +38,15 @@ namespace ImageConverter.Domain.Dto
             using (IStorageContext conn = storageContext.CreateTransaction())
             {
                 conn.JobSummaryRepository.CancelAllRunningJobs();
-                Sum = conn.ImageConverterSummaryRepository.GetImageConverterSummary();
+
+                AllSummary = conn.ImageConverterSummaryRepository.GetImageConverterSummary();
+                AllSummary.State = ImageConverterStates.Running.ToString();
+                AllSummary.LastStarted = jobStarted;
+                AllSummary.JobCount++;
+
+                conn.ImageConverterSummaryRepository.Update(AllSummary);
+                JobSummary = conn.JobSummaryRepository.New(jobStarted, AllSummary.State);
             }
-            Sum.State = ImageConverterStates.Running.ToString();
-            Sum.LastStarted = jobStarted;
-            Sum.JobCount++;
-
-            JobSummary = new JobSummary { JobStarted = jobStarted, State = Sum.State };
-
-            Save();
 
             sw = Stopwatch.StartNew();
         }
@@ -55,7 +55,7 @@ namespace ImageConverter.Domain.Dto
         {
             using (IStorageContext conn = storageContext.CreateTransaction())
             {
-                conn.ImageConverterSummaryRepository.Upsert(Sum);
+                conn.ImageConverterSummaryRepository.Upsert(AllSummary);
                 conn.JobSummaryRepository.Upsert(saveJobSummary ? JobSummary : null);
                 conn.QueueItemRepository.Update(updateQueueItem);
                 conn.QueueItemRepository.Delete(deleteQueueItem);
@@ -68,7 +68,7 @@ namespace ImageConverter.Domain.Dto
             {
                 JobSummary.DeletedFileCount++;
                 JobSummary.SumDeletedFileSize += fileSize;
-                Sum.DeletedFileCount++;
+                AllSummary.DeletedFileCount++;
                 Save(deleteQueueItem: queueItem);
             }
         }
@@ -82,9 +82,9 @@ namespace ImageConverter.Domain.Dto
 
             lock (_lock)
             {
-                Sum.InputBytes += inputFileInfo.Length;
-                Sum.OutputBytes += outputFileSize.Value;
-                Sum.ConvertedImageCount++;
+                AllSummary.InputBytes += inputFileInfo.Length;
+                AllSummary.OutputBytes += outputFileSize.Value;
+                AllSummary.ConvertedImageCount++;
 
                 JobSummary.InputBytes += inputFileInfo.Length;
                 JobSummary.OutputBytes += outputFileSize.Value;
@@ -102,7 +102,7 @@ namespace ImageConverter.Domain.Dto
             lock (_lock)
             {
                 JobSummary.IgnoredFileCount++;
-                Sum.IgnoredFileCount++;
+                AllSummary.IgnoredFileCount++;
                 processingQueueItem.State = ProcessingQueueItemState.Ignored;
                 queueItem.State = (byte)QueueItemState.Ignored;
                 Save(updateQueueItem: queueItem);
@@ -114,7 +114,7 @@ namespace ImageConverter.Domain.Dto
             lock (_lock)
             {
                 JobSummary.ErrorCount++;
-                Sum.ErrorCount++;
+                AllSummary.ErrorCount++;
                 processingQueueItem.State = ProcessingQueueItemState.Failed;
                 queueItem.State = (byte)QueueItemState.Error;
                 Save(updateQueueItem: queueItem);
@@ -131,26 +131,26 @@ namespace ImageConverter.Domain.Dto
             {
                 DateTime nextFireTime = nextFireTimeUtc.Value.LocalDateTime;
                 logger.LogInformation("Next fire time {nextFireTime}", nextFireTime);
-                Sum.NextFire = nextFireTime;
+                AllSummary.NextFire = nextFireTime;
             }
             else
             {
-                Sum.NextFire = null;
+                AllSummary.NextFire = null;
             }
 
-            Sum.State = context.CancellationToken.IsCancellationRequested ?
+            AllSummary.State = context.CancellationToken.IsCancellationRequested ?
                 ImageConverterStates.Cancelled.ToString() :
                 ImageConverterStates.Finished.ToString();
 
-            Sum.LastFinished = DateTime.Now;
-            JobSummary.JobFinished = Sum.LastFinished;
-            JobSummary.State = Sum.State;
+            AllSummary.LastFinished = DateTime.Now;
+            JobSummary.JobFinished = AllSummary.LastFinished;
+            JobSummary.State = AllSummary.State;
             Save();
         }
 
         private void LogStatistics()
         {
-            IImageConverterSummary sumStorage = Sum;
+            IImageConverterSummary sumStorage = AllSummary;
 
             var prettyProcessedBytes = PrettySize.Bytes(sumStorage.InputBytes);
             var prettySumSavedBytes = PrettySize.Bytes(sumStorage.OutputBytes);
@@ -159,7 +159,7 @@ namespace ImageConverter.Domain.Dto
             logger.LogInformation("******************************************************************************************************************");
             logger.LogInformation("Totally converted images: {convertedImageCount}, processed: {processedBytes}, saved: {sumSavedBytes}, cleaned #: {deletedFileCount}, cleaned: {sumDeletedFileSize}, ignored #: {ignoredCount}",
                 sumStorage.ConvertedImageCount, prettyProcessedBytes.Format(UnitBase.Base10), prettySumSavedBytes.Format(UnitBase.Base10),
-                sumStorage.DeletedFileCount, prettySumDeletedFileSize.Format(UnitBase.Base10), Sum.IgnoredFileCount);
+                sumStorage.DeletedFileCount, prettySumDeletedFileSize.Format(UnitBase.Base10), AllSummary.IgnoredFileCount);
             logger.LogInformation("******************************************************************************************************************");
         }
 

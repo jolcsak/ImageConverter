@@ -6,8 +6,8 @@ namespace ImageConverter.Domain.Queue
 {
     public interface IImageConverterJobHandler
     {
-        IJobSummary JobSummary { get; }
-        IImageConverterSummary Sum { get; }
+        IImageConverterSummary? AllSummary { get; }
+        IJobSummary? JobSummary { get; }
 
         void OnFileDeleted(IQueueItem queueItem, long fileSize);
         void OnImageConverted(IQueueItem queueItem, ProcessingQueueItem processingQueueItem, FileInfo inputFileInfo, long? outputFileSize);
