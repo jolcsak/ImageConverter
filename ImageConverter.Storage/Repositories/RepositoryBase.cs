@@ -52,14 +52,11 @@ namespace ImageConverter.Storage.Repositories
             });
         }
 
-        public void Delete<T>(T entity)
+        public int Delete<T>(T entity)
         {
-            Db(db =>
+            return DbGet(db =>
             {
-                if (entity != null)
-                {
-                    db.Delete(entity);
-                }
+                return entity != null ? db.Delete(entity) : 0;
             });
         }
     }
