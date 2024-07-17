@@ -4,6 +4,8 @@ namespace ImageConverter.Storage.Repositories
 {
     public class RepositoryBase
     {
+        private static readonly object _dbLock = new object();
+
         protected readonly StorageContextBase storageContext;
 
         protected RepositoryBase(StorageContextBase storageContext)
@@ -13,31 +15,37 @@ namespace ImageConverter.Storage.Repositories
 
         protected void Db(Action<SQLiteConnection> a)
         {
-            if (storageContext.Connection == null)
+            lock (_dbLock)
             {
-                using (SQLiteConnection connection = storageContext.CreateConnection())
+                if (storageContext.Connection == null)
                 {
-                    a(connection);
+                    using (SQLiteConnection connection = storageContext.CreateConnection())
+                    {
+                        a(connection);
+                    }
                 }
-            }
-            else
-            {
-                a(storageContext.Connection);
+                else
+                {
+                    a(storageContext.Connection);
+                }
             }
         }
 
         protected T DbGet<T>(Func<SQLiteConnection, T> f)
         {
-            if (storageContext.Connection == null)
+            lock (_dbLock)
             {
-                using (SQLiteConnection connection = storageContext.CreateConnection())
+                if (storageContext.Connection == null)
                 {
-                    return f(connection);
+                    using (SQLiteConnection connection = storageContext.CreateConnection())
+                    {
+                        return f(connection);
+                    }
                 }
-            }
-            else
-            {
-                return f(storageContext.Connection);
+                else
+                {
+                    return f(storageContext.Connection);
+                }
             }
         }
 

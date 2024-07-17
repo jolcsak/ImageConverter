@@ -1,5 +1,6 @@
 ﻿using ImageConverter.Domain;
 using ImageConverter.Domain.Queue;
+using System.Runtime.CompilerServices;
 
 namespace ImageConverter.Web.Server.Queue
 {
@@ -7,16 +8,19 @@ namespace ImageConverter.Web.Server.Queue
     {
         private readonly IQueueHandler queueHandler;
         private readonly IExecutionContext executionContext;
+        private readonly ILogger<TaskPool> logger;
 
         private readonly int maxDegreeOfParallelism;
 
         public TaskPool(
             IConfigurationHandler configurationHandler,
             IQueueHandler queueHandler,
-            IExecutionContext executionContext)
+            IExecutionContext executionContext,
+            ILogger<TaskPool> logger)
         {
             this.queueHandler = queueHandler;
             this.executionContext = executionContext;
+            this.logger = logger;
 
             var configuration = configurationHandler.GetConfiguration();
             maxDegreeOfParallelism = configuration.ThreadNumber!.Value;
@@ -49,7 +53,14 @@ namespace ImageConverter.Web.Server.Queue
                     {
                         while (!cancellationToken.IsCancellationRequested && queueHandler.TryDequeue(out var queueItem))
                         {
-                            await task(queueItem!);
+                            try
+                            {
+                                await task(queueItem!);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex, "Error during image conversion!");
+                            }
                         }
                     }, cancellationToken));
                 }
